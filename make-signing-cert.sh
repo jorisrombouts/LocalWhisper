@@ -8,7 +8,8 @@ TMP=$(mktemp -d)
 cd "$TMP"
 openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 3650 -nodes \
   -subj "/CN=LocalWhisper Dev" -addext "keyUsage=digitalSignature" -addext "extendedKeyUsage=codeSigning"
-openssl pkcs12 -export -inkey key.pem -in cert.pem -out lw.p12 -passout pass:lw -name "LocalWhisper Dev"
+openssl pkcs12 -export -inkey key.pem -in cert.pem -out lw.p12 -passout pass:lw -name "LocalWhisper Dev" \
+  -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES -macalg sha1   # macOS cannot import OpenSSL 3 defaults
 security import lw.p12 -k ~/Library/Keychains/login.keychain-db -P lw -T /usr/bin/codesign
 security add-trusted-cert -r trustRoot -p codeSign -k ~/Library/Keychains/login.keychain-db cert.pem
 rm -rf "$TMP"
