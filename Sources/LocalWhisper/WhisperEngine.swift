@@ -40,9 +40,13 @@ actor WhisperEngine {
 
         var text = ""
         for i in 0..<whisper_full_n_segments(ctx) {
+            // Whisper hallucinates sentences on silence; drop segments it itself thinks are non-speech.
+            guard whisper_full_get_segment_no_speech_prob(ctx, i) < 0.6 else { continue }
             if let c = whisper_full_get_segment_text(ctx, i) { text += String(cString: c) }
         }
-        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Punctuation-only output (e.g. ".") is silence, not speech.
+        return text.contains(where: { $0.isLetter || $0.isNumber }) ? text : ""
     }
 
     func warmUp() {
