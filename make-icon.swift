@@ -1,3 +1,7 @@
+// Generates the app icon. Rebuild Resources/AppIcon.icns with:
+//   swiftc -O make-icon.swift -o /tmp/icon && /tmp/icon /tmp/icon1024.png
+//   mkdir -p /tmp/AppIcon.iconset && for s in 16 32 128 256 512; do sips -z $s $s /tmp/icon1024.png --out /tmp/AppIcon.iconset/icon_${s}x${s}.png; sips -z $((s*2)) $((s*2)) /tmp/icon1024.png --out /tmp/AppIcon.iconset/icon_${s}x${s}@2x.png; done
+//   iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns
 import SwiftUI
 import AppKit
 
