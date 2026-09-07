@@ -8,7 +8,13 @@ struct LocalWhisperApp: App {
     init() {
         // Start after AppKit has finished launching; Metal init on a background thread before that stalls.
         NotificationCenter.default.addObserver(forName: NSApplication.didFinishLaunchingNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { DictationController.shared.start() }
+            MainActor.assumeIsolated {
+                if let i = CommandLine.arguments.firstIndex(of: "--overlay-demo"), i + 1 < CommandLine.arguments.count {
+                    DictationController.shared.demoOverlay(to: CommandLine.arguments[i + 1])
+                } else {
+                    DictationController.shared.start()
+                }
+            }
         }
     }
 
@@ -50,9 +56,9 @@ struct LocalWhisperApp: App {
 
     @ViewBuilder private var menuIcon: some View {
         switch controller.state {
-        case .listening: Image(systemName: "mic.fill").foregroundStyle(.red)
+        case .listening: Image(systemName: "waveform.badge.mic").foregroundStyle(.red)
         case .transcribing, .cleaning: Image(systemName: "waveform").symbolEffect(.variableColor)
-        default: Image(systemName: "mic")
+        default: Image(systemName: "waveform")
         }
     }
 
