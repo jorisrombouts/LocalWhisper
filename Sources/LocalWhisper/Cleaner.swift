@@ -1,12 +1,10 @@
 import FoundationModels
 import Foundation
 
-/// On-device cleanup of raw transcripts via Apple's FoundationModels. Falls back to the raw text on
-/// timeout, error, or empty output. Skipped entirely under 4 words.
+/// On-device cleanup of raw transcripts via Apple's FoundationModels.
 @MainActor
 final class Cleaner {
     static let timeout: Duration = .seconds(1.5)
-    static let minWords = 4
 
     static let instructions = """
     You are a transcript editor. The user sends a raw speech-to-text transcript. Reply with only the edited transcript.
@@ -43,9 +41,8 @@ final class Cleaner {
         _ = try? await session.respond(to: "Transcript: hello there how are you", options: GenerationOptions(temperature: 0))
     }
 
-    /// Returns (text, cleaned). `cleaned == false` means the raw text came back.
-    func clean(_ raw: String) async -> (String, Bool) {
-        guard raw.split(separator: " ").count >= Self.minWords else { return (raw, false) }
+    /// Cleaned text, or nil on timeout, error or empty output.
+    func clean(_ raw: String) async -> String? {
         if session.isResponding { session = LanguageModelSession(instructions: Self.instructions) }
         let s = session
         let respond = Task { try await s.respond(to: "Transcript: " + raw, options: GenerationOptions(temperature: 0)).content }
@@ -57,6 +54,6 @@ final class Cleaner {
             return first
         }
         let out = result?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return out.isEmpty ? (raw, false) : (out, true)
+        return out.isEmpty ? nil : out
     }
 }

@@ -103,13 +103,11 @@ final class DictationController {
 
             var cleanMs = 0
             var fellBack = false
-            if Settings.cleanupEnabled, cleanupUnavailable == nil {
+            if Settings.cleanupEnabled, cleanupUnavailable == nil, text.split(separator: " ").count >= 4 {
                 state = .cleaning
                 let t1 = Date()
-                let (cleaned, ok) = await cleaner.clean(text)
+                if let cleaned = await cleaner.clean(text) { text = cleaned } else { fellBack = true }
                 cleanMs = ms(since: t1)
-                fellBack = !ok && text.split(separator: " ").count >= Cleaner.minWords
-                text = cleaned
             }
 
             let t2 = Date()
@@ -142,7 +140,7 @@ final class DictationController {
         level = 0.08
         for (name, s) in states {
             state = s
-            let r = ImageRenderer(content: OverlayView(controller: self).frame(width: 300, height: 80).background(.blue.opacity(0.3)))
+            let r = ImageRenderer(content: OverlayView(controller: self).background(.blue.opacity(0.3)))
             r.scale = 2
             if let img = r.nsImage, let tiff = img.tiffRepresentation,
                let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {

@@ -1,32 +1,27 @@
-import Foundation
-import AVFoundation
-
 import AppKit
+import AVFoundation
 
 let args = CommandLine.arguments
 
-// Step 6 harness: `LocalWhisper --clean "raw text"`
+// Cleanup check: `LocalWhisper --clean "raw text"`
 if let i = args.firstIndex(of: "--clean"), i + 1 < args.count {
     if let r = Cleaner.unavailableReason { print(r); exit(1) }
     let cleaner = Cleaner()
     Task { @MainActor in
         await cleaner.warmUp()
         let t0 = Date()
-        let (out, ok) = await cleaner.clean(args[i + 1])
-        print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", ok)
-        print("text:", out)
+        let out = await cleaner.clean(args[i + 1])
+        print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", out != nil)
+        print("text:", out ?? "(fallback)")
         exit(0)
     }
     RunLoop.main.run()
 }
 
-// Step 1 harness: `LocalWhisper --transcribe file.wav`
+// Engine check: `LocalWhisper --transcribe file.wav`
 if let i = args.firstIndex(of: "--transcribe"), i + 1 < args.count {
-    let modelPath = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        .appendingPathComponent("Resources/ggml-large-v3-turbo.bin").path
     let t0 = Date()
-    let engine = try WhisperEngine(modelPath: modelPath)
+    let engine = try WhisperEngine(modelPath: DictationController.modelURL()!.path)
     print("load_ms", Int(Date().timeIntervalSince(t0) * 1000))
 
     let samples = try loadSamples16k(URL(fileURLWithPath: args[i + 1]))
@@ -35,32 +30,6 @@ if let i = args.firstIndex(of: "--transcribe"), i + 1 < args.count {
     let sem = DispatchSemaphore(value: 0)
     Task.detached {
         await engine.warmUp()
-        let t1 = Date()
-        let text = await engine.transcribe(samples)
-        print("whisper_ms", Int(Date().timeIntervalSince(t1) * 1000))
-        print("text:", text)
-        sem.signal()
-    }
-    sem.wait()
-    fflush(stdout); _exit(0) // ggml-metal v1.9.2 asserts in its atexit teardown
-}
-
-// Step 2 harness: `LocalWhisper --record 3`
-if let i = args.firstIndex(of: "--record"), i + 1 < args.count, let secs = Double(args[i + 1]) {
-    let modelPath = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        .appendingPathComponent("Resources/ggml-large-v3-turbo.bin").path
-    let engine = try WhisperEngine(modelPath: modelPath)
-    let recorder = AudioRecorder()
-    recorder.onLevel = { level in if level > 0.02 { FileHandle.standardError.write("level \(level)\n".data(using: .utf8)!) } }
-    let sem = DispatchSemaphore(value: 0)
-    Task.detached {
-        await engine.warmUp()
-        print("recording \(secs)s... speak now"); fflush(stdout)
-        try recorder.start()
-        try await Task.sleep(for: .seconds(secs))
-        guard let samples = recorder.stop() else { print("clip too short"); sem.signal(); return }
-        print("audio_s", Double(samples.count) / 16_000)
         let t1 = Date()
         let text = await engine.transcribe(samples)
         print("whisper_ms", Int(Date().timeIntervalSince(t1) * 1000))
@@ -110,6 +79,4 @@ if let i = args.firstIndex(of: "--launch-at-login"), i + 1 < args.count {
 let logPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/LocalWhisper.log").path
 freopen(logPath, "a", stderr)
 NSApplication.shared.setActivationPolicy(.accessory)
-let app = LocalWhisperApp()
-_ = app
 LocalWhisperApp.main()
