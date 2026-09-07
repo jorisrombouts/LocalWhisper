@@ -4,7 +4,7 @@
 set -eu
 cd "$(dirname "$0")"
 ./fetch-deps.sh
-swift build -c release 2>&1 | grep -vE "warning:|\^|^\s*[0-9]+ \||^\s*\|" || true
+swift build -c release --quiet
 
 APP=build/LocalWhisper.app
 pkill -x LocalWhisper 2>/dev/null || true   # a running app whose bundle is replaced fails TCC validation

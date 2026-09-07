@@ -17,6 +17,7 @@ final class DictationController {
     private(set) var level: Float = 0
     private(set) var lastTranscript = ""
     private(set) var problem: String?          // shown in the menu
+    private var engineProblem: String?
     private(set) var cleanupUnavailable: String? = Cleaner.unavailableReason
 
     private let recorder = AudioRecorder()
@@ -37,6 +38,7 @@ final class DictationController {
     func start() {
         guard !started else { return }
         started = true
+        if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
         recorder.onLevel = { [self] l in Task { @MainActor in level = l } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
@@ -44,7 +46,7 @@ final class DictationController {
         hotkey.start()
         refreshPermissions(prompt: true)
 
-        guard let url = Self.modelURL() else { problem = "Model file ggml-large-v3-turbo.bin not found"; return }
+        guard let url = Self.modelURL() else { engineProblem = "Model file ggml-large-v3-turbo.bin not found"; refreshPermissions(prompt: false); return }
         Task.detached { [self] in
             let t0 = Date()
             do {
@@ -54,23 +56,17 @@ final class DictationController {
                 NSLog("engine ready in %d ms", Int(Date().timeIntervalSince(t0) * 1000))
             } catch {
                 NSLog("engine failed: %@", error.localizedDescription)
-                await MainActor.run { problem = error.localizedDescription }
+                await MainActor.run { engineProblem = error.localizedDescription; refreshPermissions(prompt: false) }
             }
         }
         if cleanupUnavailable == nil { Task { await cleaner.warmUp() } }
     }
 
     func refreshPermissions(prompt: Bool) {
-        if !HotkeyMonitor.ensureAccessibility(prompt: prompt) {
-            problem = "Accessibility permission missing (needed for the hotkey and paste)"
-        } else if AVCaptureDevice.authorizationStatus(for: .audio) == .denied {
-            problem = "Microphone access denied"
-        } else if problem?.hasPrefix("Accessibility") == true || problem?.hasPrefix("Microphone") == true {
-            problem = nil
-        }
-        if AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined {
-            AVCaptureDevice.requestAccess(for: .audio) { _ in }
-        }
+        let mic = AVCaptureDevice.authorizationStatus(for: .audio)
+        if mic == .notDetermined { AVCaptureDevice.requestAccess(for: .audio) { _ in } }
+        problem = !HotkeyMonitor.ensureAccessibility(prompt: prompt) ? "Accessibility permission missing (needed to paste)"
+            : mic == .denied ? "Microphone access denied" : engineProblem
     }
 
     private func press() {

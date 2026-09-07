@@ -40,7 +40,7 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 
 ## Development
 
-A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the model and the whisper.cpp framework. The rules for changing the code are in `AGENTS.md`.
+A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the model and the whisper.cpp framework. `./check.sh` is the smoke test. The rules for changing the code are in `AGENTS.md`.
 
 ## Future improvements
 

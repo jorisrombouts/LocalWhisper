@@ -9,11 +9,7 @@ let package = Package(
         .executableTarget(
             name: "LocalWhisper",
             dependencies: ["whisper"],
-            path: "Sources/LocalWhisper",
-            linkerSettings: [
-                .linkedFramework("FoundationModels"),
-                .linkedFramework("ServiceManagement"),
-            ]
+            path: "Sources/LocalWhisper"
         ),
     ]
 )
