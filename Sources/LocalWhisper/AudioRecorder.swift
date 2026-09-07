@@ -11,14 +11,14 @@ final class AudioRecorder: @unchecked Sendable {
     private let lock = NSLock()
     private var samples: [Float] = []
     private var converter: AVAudioConverter?
-    private let target = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
+    static let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
 
     func start() throws {
         lock.withLock { samples.removeAll(keepingCapacity: true) }
         let input = engine.inputNode
         let native = input.outputFormat(forBus: 0)
         guard native.sampleRate > 0 else { throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "No input device"]) }
-        converter = AVAudioConverter(from: native, to: target)
+        converter = AVAudioConverter(from: native, to: Self.format)
         input.removeTap(onBus: 0)
         input.installTap(onBus: 0, bufferSize: 2048, format: native) { [weak self] buf, _ in
             self?.consume(buf)
@@ -37,20 +37,23 @@ final class AudioRecorder: @unchecked Sendable {
 
     private func consume(_ buf: AVAudioPCMBuffer) {
         guard let converter else { return }
-        let ratio = Self.sampleRate / buf.format.sampleRate
-        let out = AVAudioPCMBuffer(pcmFormat: target, frameCapacity: AVAudioFrameCount(Double(buf.frameLength) * ratio) + 16)!
+        let chunk = Self.resample(buf, with: converter)
+        guard !chunk.isEmpty else { return }
+        lock.withLock { samples.append(contentsOf: chunk) }
+        onLevel?((chunk.reduce(0) { $0 + $1 * $1 } / Float(chunk.count)).squareRoot())
+    }
+
+    /// One buffer through the converter to 16 kHz mono Float samples.
+    static func resample(_ buf: AVAudioPCMBuffer, with converter: AVAudioConverter) -> [Float] {
+        let ratio = converter.outputFormat.sampleRate / buf.format.sampleRate
+        let out = AVAudioPCMBuffer(pcmFormat: converter.outputFormat, frameCapacity: AVAudioFrameCount(Double(buf.frameLength) * ratio) + 16)!
         var fed = false
         var err: NSError?
         converter.convert(to: out, error: &err) { _, status in
             if fed { status.pointee = .noDataNow; return nil }
             fed = true; status.pointee = .haveData; return buf
         }
-        guard err == nil, out.frameLength > 0 else { return }
-        let chunk = UnsafeBufferPointer(start: out.floatChannelData![0], count: Int(out.frameLength))
-        lock.withLock { samples.append(contentsOf: chunk) }
-        if let onLevel {
-            let rms = (chunk.reduce(0) { $0 + $1 * $1 } / Float(chunk.count)).squareRoot()
-            onLevel(rms)
-        }
+        guard err == nil else { return [] }
+        return Array(UnsafeBufferPointer(start: out.floatChannelData![0], count: Int(out.frameLength)))
     }
 }

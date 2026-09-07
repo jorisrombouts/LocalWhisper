@@ -6,7 +6,7 @@ What it is, how to install and use it: `README.md`. This file is what keeps a ch
 
 - `./build-app.sh` fetches deps, builds release, signs, and restarts `build/LocalWhisper.app`. `./build-app.sh install` refreshes `/Applications/LocalWhisper.app`, the login item. Never replace a bundle under a running app: macOS silently drops its permissions. Never run both copies at once.
 - Sign with the "LocalWhisper Dev" certificate (`make-signing-cert.sh`). An ad-hoc signature is a new identity per build, and every permission grant dies with it.
-- Checks on the binary: `--transcribe file.wav`, `--clean "raw text"`, `--insert-test` (pastes into the frontmost app), `--overlay-demo <dir>` (renders every pill state to PNG), `--launch-at-login on|off`.
+- `./check.sh` is the smoke test (engine on English and Dutch, cleanup, overlay render); run it before merging. The flags it uses: `--transcribe file.wav`, `--clean "raw text"`, `--insert-test` (pastes into the frontmost app), `--overlay-demo <dir>` (renders every pill state to PNG), `--launch-at-login on|off`.
 - Log: `~/Library/Logs/LocalWhisper.log`. Baseline on an M4 Pro: engine load 1.3 s, whisper 0.9 s per dictation (1.7 s beyond 30 s of audio), cleanup 0.5 s plus 30 ms per second of audio. Far above these is a regression.
 - The model and the framework are gitignored; `fetch-deps.sh` gets them. A model file of a few KB is a proxy block page.
 
