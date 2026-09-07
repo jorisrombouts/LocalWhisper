@@ -1,7 +1,7 @@
 # LocalWhisper — Implementation Plan
 
 Goal: hold a key, speak, release → cleaned text at the cursor. Single native Swift app, everything on-device, nothing leaves the Mac.
-This is the plan as built. Following it from an empty folder reproduces the app in `main`.
+Following it from an empty folder reproduces the app in `main`.
 
 ## 0. Decisions
 
@@ -53,14 +53,14 @@ LocalWhisper/
 
 ## 3. Build order
 
-Each step is runnable on its own. The check next to it is what proves the step before moving on.
+Each step is runnable on its own; its check proves it before the next step.
 
 ### Step 1 — Engine wrapper (`WhisperEngine.swift`)
 - `whisper_init_from_file_with_params` with `use_gpu` and `flash_attn`; `whisper_full` with greedy sampling, `language = "auto"`, `no_timestamps`, 4 threads, all printing off.
 - Drop segments with `no_speech_prob >= 0.6` and any output without letters or digits: whisper invents sentences on silence.
 - `warmUp()` transcribes 1 s of silence at launch.
 - Check: `LocalWhisper --transcribe clip.wav` on a `say`-generated English and Dutch clip. Done when a 6 s clip transcribes in about 0.9 s.
-- Pitfall: a top-level `Task {}` in `main.swift` is main-actor isolated; blocking main with a semaphore deadlocks. Use `Task.detached` or `RunLoop.main.run()`. Exit harnesses with `_exit` after `fflush`; ggml-metal asserts in its `atexit` handler.
+- A top-level `Task {}` in `main.swift` is main-actor isolated; blocking main with a semaphore deadlocks. Use `Task.detached` or `RunLoop.main.run()`. Exit harnesses with `_exit` after `fflush`; ggml-metal asserts in its `atexit` handler.
 
 ### Step 2 — Audio capture (`AudioRecorder.swift`)
 - Tap at the native format, `AVAudioConverter` to 16 kHz mono Float32, accumulate under a lock, RMS per buffer for the level meter.
@@ -74,7 +74,7 @@ Each step is runnable on its own. The check next to it is what proves the step b
 
 ### Step 4 — Insert (`TextInserter.swift`)
 - Save the pasteboard string, set the text, post ⌘V key down and up via `CGEvent` on the HID tap, restore after 0.3 s.
-- Log `ax_trusted`, `post_event_ok`, `pasteboard_wrote` on every insert. This line is what separates a permission problem from a code problem.
+- Log `ax_trusted`, `post_event_ok`, `pasteboard_wrote` on every insert; the line separates a permission problem from a code problem.
 - Check: `LocalWhisper --insert-test` pastes a fixed string into the frontmost app.
 
 ### Step 5 — Wire the loop (`DictationController.swift`, `LocalWhisperApp.swift`)
@@ -87,7 +87,7 @@ Each step is runnable on its own. The check next to it is what proves the step b
 - One `LanguageModelSession` created at launch and warmed. Instructions: output only the edited transcript; keep the language; fix punctuation and casing; remove fillers; apply self-corrections. Few-shot examples, two of them Dutch.
 - Race `respond` against `Task.sleep` in a task group; nil on timeout, error or empty output means the raw text is inserted.
 - Check: `LocalWhisper --clean "raw text"` on English, Dutch and Swedish input. Done when fillers disappear and the language never changes.
-- Pitfall: without an explicit "keep the language" rule the model translates Dutch to English.
+- Without an explicit "keep the language" rule the model translates Dutch to English.
 
 ### Step 7 — Feedback (`RecordingOverlay.swift`, menu bar)
 - `NSPanel` with `.nonactivatingPanel`, `.borderless`, floating, ignores mouse, joins all Spaces, transparent, shown with `orderFrontRegardless` only.
@@ -114,19 +114,6 @@ Each step is runnable on its own. The check next to it is what proves the step b
 - [x] Permissions granted once, survive rebuilds
 - [x] Zero network calls
 
-## 5. Deviations from the first plan
-
-- No Xcode project. The Command Line Tools build the package, and a script makes the bundle. Xcode is only needed for Icon Composer or a Developer ID.
-- Personal Team signing was not possible without Xcode; the self-signed certificate replaced it and gives the same permission stability.
-- Menu bar icon changed from `mic` to `waveform`, uncoloured, per the Human Interface Guidelines.
-- Cleanup timeout scales with audio length; a fixed 1.5 s rejected every dictation over 30 s.
-- Two harness flags exist that the plan did not foresee, `--insert-test` and `--overlay-demo`, because the agent sandbox can neither read the unified log nor take screenshots.
-- `--record` harness existed for Step 2 and was removed once the app covered it.
-
-## 6. Not in v1
+## 5. Not in v1
 
 See "Future improvements" in `README.md`.
-
-## 7. Effort as spent
-
-Steps 1 to 5 in one session, Steps 6 to 8 in a second. Most of the time went to permissions and signing, not to the code, as predicted.
