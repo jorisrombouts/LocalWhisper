@@ -16,13 +16,13 @@ final class RecordingOverlay {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = true
+        panel.hasShadow = false   // the capsule draws its own shadow; a window shadow lags behind the animation
         panel.hidesOnDeactivate = false
         panel.contentView = hosting
     }
 
     func show() {
-        let size = hosting.fittingSize
+        let size = OverlayView.canvas
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         guard let frame = screen?.visibleFrame else { return }
         panel.setFrame(NSRect(x: frame.midX - size.width / 2, y: frame.minY + 80, width: size.width, height: size.height), display: true)
@@ -33,6 +33,9 @@ final class RecordingOverlay {
 }
 
 struct OverlayView: View {
+    /// Transparent window size; the pill sizes itself to its content and animates inside it.
+    static let canvas = NSSize(width: 360, height: 80)
+
     let controller: DictationController
 
     var body: some View {
@@ -40,17 +43,21 @@ struct OverlayView: View {
             icon
             label
         }
-        // Fixed size so every state fits: the panel is sized once, when shown.
-        .frame(width: 200, height: 22)
+        .frame(height: 22)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: Capsule())
-        .padding(12)
+        .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
+        .frame(width: Self.canvas.width, height: Self.canvas.height)
         .animation(.easeOut(duration: 0.08), value: controller.level)
-        .animation(.spring(duration: 0.25), value: controller.state)
+        .animation(.spring(duration: 0.35, bounce: 0.15), value: controller.state)
     }
 
     @ViewBuilder private var icon: some View {
+        Group { iconContent }.transition(.opacity.combined(with: .scale(scale: 0.6)))
+    }
+
+    @ViewBuilder private var iconContent: some View {
         switch controller.state {
         case .listening:
             Image(systemName: "mic.fill").foregroundStyle(.red)
@@ -69,7 +76,11 @@ struct OverlayView: View {
     }
 
     private var label: some View {
-        Text(text).font(.system(size: 13, weight: .medium)).monospacedDigit()
+        Text(text)
+            .font(.system(size: 13, weight: .medium))
+            .fixedSize()
+            .id(text)   // new text fades in while the capsule springs to its new width
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
 
     private var text: String {
