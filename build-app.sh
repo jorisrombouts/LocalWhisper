@@ -1,5 +1,6 @@
 #!/bin/sh
 # Builds LocalWhisper.app with SwiftPM (no Xcode project needed). Output: build/LocalWhisper.app
+# `./build-app.sh install` also copies it to /Applications and launches that copy.
 set -eu
 cd "$(dirname "$0")"
 swift build -c release 2>&1 | grep -vE "warning:|\^|^\s*[0-9]+ \||^\s*\|" || true
@@ -39,4 +40,7 @@ fi
 codesign --force --deep -s "$CODESIGN_IDENTITY" "$APP"
 echo "signed with: $CODESIGN_IDENTITY"
 codesign --verify --deep --strict "$APP" && echo "built $APP"
+if [ "${1:-}" = install ]; then
+  rm -rf /Applications/LocalWhisper.app && cp -c -R "$APP" /Applications/ && APP=/Applications/LocalWhisper.app && echo "installed $APP"
+fi
 open "$APP"
