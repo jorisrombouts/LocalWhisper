@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 swift build -c release 2>&1 | grep -vE "warning:|\^|^\s*[0-9]+ \||^\s*\|" || true
 
 APP=build/LocalWhisper.app
+pkill -x LocalWhisper 2>/dev/null || true   # a running app whose bundle is replaced fails TCC validation
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp .build/release/LocalWhisper "$APP/Contents/MacOS/"
@@ -38,3 +39,4 @@ fi
 codesign --force --deep -s "$CODESIGN_IDENTITY" "$APP"
 echo "signed with: $CODESIGN_IDENTITY"
 codesign --verify --deep --strict "$APP" && echo "built $APP"
+open "$APP"

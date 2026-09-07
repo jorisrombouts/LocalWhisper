@@ -88,6 +88,17 @@ func loadSamples16k(_ url: URL) throws -> [Float] {
     return Array(UnsafeBufferPointer(start: outBuf.floatChannelData![0], count: Int(outBuf.frameLength)))
 }
 
+// Insert self-test: `LocalWhisper --insert-test` pastes a fixed string into the frontmost app after 3 s.
+if args.contains("--insert-test") {
+    Task { @MainActor in
+        try? await Task.sleep(for: .seconds(3))
+        TextInserter.insert("hello from LocalWhisper")
+        try? await Task.sleep(for: .seconds(1))
+        exit(0)
+    }
+    RunLoop.main.run()
+}
+
 // Normal launch: the menu bar app.
 NSApplication.shared.setActivationPolicy(.accessory)
 let app = LocalWhisperApp()
