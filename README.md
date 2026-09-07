@@ -41,3 +41,15 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 ## Development
 
 A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the model and the whisper.cpp framework. The rules for changing the code are in `AGENTS.md`.
+
+## Future improvements
+
+Not done, written down so they are not rediscovered.
+
+- CoreML encoder: whisper's encoder on the Neural Engine cuts the 0.9 s per dictation to roughly 0.4 s. Needs a one-time Python conversion of the model with coremltools and a framework built with CoreML support.
+- Fn/Globe as hotkey. Needs "Press Fn key: Do Nothing" in Keyboard settings.
+- Custom vocabulary through whisper's `initial_prompt`, if technical terms get mangled.
+- Streaming preview while speaking, and voice activity detection.
+- Model download on first launch instead of at build time, needed before distributing a prebuilt app.
+- Notarized release with a Developer ID, so a prebuilt app opens without Gatekeeper warnings.
+- Layered app icon made with Icon Composer (ships with Xcode 26).
