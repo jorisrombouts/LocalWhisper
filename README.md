@@ -1,7 +1,7 @@
 # LocalWhisper
 
 Hold Left Option, speak, release. The text appears at your cursor, in any app.
-Speech recognition runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model, cleanup on Apple Intelligence. Everything runs on your Mac. Nothing leaves it.
+Speech recognition runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model, cleanup on the Apple Intelligence system language model (Apple's on-device Foundation Models default, about 3B parameters, not bundled). Everything runs on your Mac. Nothing leaves it.
 
 ## Requirements
 
