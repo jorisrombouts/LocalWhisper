@@ -30,7 +30,16 @@ Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-
 
 ## Speed
 
-Measured on an M4 Pro. Speech recognition takes about 0.9 s regardless of length up to 30 s of audio, and 1.7 s beyond. Cleanup adds 0.5 to 0.8 s for a short sentence and 2 to 3 s for a 45 s dictation. Text appears 1.5 to 2 s after you release the key for a typical dictation, and the cleanup toggle in the menu turns that into 0.9 s. Timings for your own machine are in the log, see Troubleshooting.
+Measured on an M4 Pro, from key release to text at the cursor. Timings for your own machine are in the log, see Troubleshooting.
+
+| Dictation | Recognition | Cleanup | Total |
+|---|---|---|---|
+| 3 s | 0.9 s | 0.6 s | 1.5 s |
+| 10 s | 1.0 s | 1.1 s | 2.1 s |
+| 20 s | 1.1 s | 1.4 s | 2.5 s |
+| 45 s | 1.7 s | 2.5 s | 4.2 s |
+
+Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves only the recognition column.
 
 ## Privacy
 
@@ -41,6 +50,10 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 - The pill says "Inserted" but nothing was pasted: Accessibility is missing or stale. Run `tccutil reset Accessibility nl.joris.localwhisper`, relaunch the app, grant it again.
 - Timings per dictation and engine output are in `~/Library/Logs/LocalWhisper.log`.
 - If you rebuild often, run `./make-signing-cert.sh` once so permissions survive rebuilds.
+
+## Credits
+
+Built on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) by Georgi Gerganov and contributors (MIT), using its prebuilt framework and the `ggml-large-v3-turbo` model derived from OpenAI's Whisper. Cleanup uses Apple's on-device Foundation Models.
 
 ## Development
 
