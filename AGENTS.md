@@ -20,6 +20,6 @@ What it is, how to install and use it: `README.md`. This file is what keeps a ch
 - SwiftUI instantiates the `App` struct more than once: the controller is a singleton, started on `didFinishLaunching`. Loading whisper (Metal) before AppKit has finished launching stalls.
 - Top-level `Task {}` in `main.swift` runs on the main actor; blocking main with a semaphore deadlocks it. Harness code uses `RunLoop.main.run()` or `Task.detached`.
 - whisper.cpp v1.9.2 asserts in a ggml-metal `atexit` handler; the app quits with `_exit`. Its "failed to load Core ML model" line is the expected Metal fallback.
-- Whisper hallucinates sentences on silence: segments with `no_speech_prob >= 0.6` and punctuation-only output are dropped.
+- Whisper hallucinates on silence ("Thank you.", "you"): clips whose loudest 100 ms stays under 0.01 RMS are skipped, segments with `no_speech_prob >= 0.6` and punctuation-only output are dropped. The log line `whisper rms= peak=` is the calibration data.
 - FoundationModels translates unless the instructions say to keep the language; the prompt is few-shot with Dutch examples. Verify with `--clean`.
 - Overlay: the `NSPanel` has a fixed generous transparent frame; the SwiftUI pill sizes itself inside it. `ProgressView` does not render in a non-activating panel; use SF Symbol effects. All icons are SF Symbols; the menu bar icon stays monochrome. Menu items use title case, with an ellipsis when they open another window. The animations stay on regardless of Reduce Motion; that is the owner's choice.
