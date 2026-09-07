@@ -99,6 +99,13 @@ if args.contains("--insert-test") {
     RunLoop.main.run()
 }
 
+// `LocalWhisper --launch-at-login on|off` (run from the installed bundle) registers the app with launchd.
+if let i = args.firstIndex(of: "--launch-at-login"), i + 1 < args.count {
+    Settings.launchAtLogin = args[i + 1] == "on"
+    print("launch at login:", Settings.launchAtLogin ? "on" : "off", "(\(Bundle.main.bundlePath))")
+    exit(0)
+}
+
 // Normal launch: the menu bar app. stderr (whisper + NSLog) goes to ~/Library/Logs/LocalWhisper.log.
 let logPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/LocalWhisper.log").path
 freopen(logPath, "a", stderr)
