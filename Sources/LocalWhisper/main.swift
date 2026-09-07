@@ -99,7 +99,9 @@ if args.contains("--insert-test") {
     RunLoop.main.run()
 }
 
-// Normal launch: the menu bar app.
+// Normal launch: the menu bar app. stderr (whisper + NSLog) goes to ~/Library/Logs/LocalWhisper.log.
+let logPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/LocalWhisper.log").path
+freopen(logPath, "a", stderr)
 NSApplication.shared.setActivationPolicy(.accessory)
 let app = LocalWhisperApp()
 _ = app
