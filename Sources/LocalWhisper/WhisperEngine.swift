@@ -1,3 +1,4 @@
+import Accelerate
 import Foundation
 import whisper
 
@@ -19,8 +20,15 @@ actor WhisperEngine {
 
     // Engine lives for the process lifetime; no deinit needed.
 
+    /// Clips quieter than this are silence: whisper answers silence with "Thank you." or "you".
+    /// ponytail: fixed threshold; calibrate from `rms=` in the log if quiet speech gets dropped
+    static let silenceRMS: Float = 0.005
+
     /// 16 kHz mono float samples in, text out.
     func transcribe(_ samples: [Float]) -> String {
+        let rms = vDSP.rootMeanSquare(samples)
+        NSLog("whisper rms=%.4f", rms)
+        guard rms >= Self.silenceRMS else { return "" }
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         params.language = UnsafePointer(language)
         params.n_threads = 4
