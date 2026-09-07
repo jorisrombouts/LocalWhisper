@@ -28,6 +28,10 @@ macOS asks for two permissions on first use: Microphone, and Accessibility, whic
 
 Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-corrections such as "no wait". It never translates. Dictations under four words are inserted as is.
 
+## Speed
+
+Measured on an M4 Pro. Speech recognition takes about 0.9 s regardless of length up to 30 s of audio, and 1.7 s beyond. Cleanup adds 0.5 to 0.8 s for a short sentence and 2 to 3 s for a 45 s dictation. Text appears 1.5 to 2 s after you release the key for a typical dictation, and the cleanup toggle in the menu turns that into 0.9 s. Timings for your own machine are in the log, see Troubleshooting.
+
 ## Privacy
 
 No network calls. The model and Apple Intelligence run on-device. Your clipboard is restored after the paste.
