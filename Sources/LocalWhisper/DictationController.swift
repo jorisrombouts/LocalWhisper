@@ -97,6 +97,7 @@ final class DictationController {
         state = .transcribing
         Task {
             let t0 = Date()
+            let audioSeconds = Double(samples.count) / AudioRecorder.sampleRate
             var text = await engine.transcribe(samples)
             let whisperMs = ms(since: t0)
             guard !text.isEmpty else { finish(); return }
@@ -106,7 +107,7 @@ final class DictationController {
             if Settings.cleanupEnabled, cleanupUnavailable == nil, text.split(separator: " ").count >= 4 {
                 state = .cleaning
                 let t1 = Date()
-                if let cleaned = await cleaner.clean(text) { text = cleaned } else { fellBack = true }
+                if let cleaned = await cleaner.clean(text, audioSeconds: audioSeconds) { text = cleaned } else { fellBack = true }
                 cleanMs = ms(since: t1)
             }
 
@@ -114,7 +115,7 @@ final class DictationController {
             TextInserter.insert(text)
             lastTranscript = text
             NSLog("dictation audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
-                  Double(samples.count) / AudioRecorder.sampleRate, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
+                  audioSeconds, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
             state = fellBack ? .fallback("Raw text inserted") : .done
             try? await Task.sleep(for: .milliseconds(fellBack ? 1500 : 700))
             finish()
