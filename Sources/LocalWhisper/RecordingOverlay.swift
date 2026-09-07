@@ -40,6 +40,8 @@ struct OverlayView: View {
             icon
             label
         }
+        // Fixed size so every state fits: the panel is sized once, when shown.
+        .frame(width: 200, height: 22)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: Capsule())
@@ -55,10 +57,8 @@ struct OverlayView: View {
             LevelBars(level: controller.level)
         case .transcribing:
             Image(systemName: "waveform").symbolEffect(.variableColor.iterative)
-            ProgressView().controlSize(.small)
         case .cleaning:
-            Image(systemName: "sparkles")
-            ProgressView().controlSize(.small)
+            Image(systemName: "sparkles").symbolEffect(.pulse)
         case .done:
             Image(systemName: "checkmark").foregroundStyle(.green)
         case .fallback:

@@ -1,6 +1,7 @@
 import AppKit
 import AVFoundation
 import Observation
+import SwiftUI
 
 /// idle → listening → transcribing → cleaning → done. Owns every component; the UI is a function of `state`.
 @MainActor
@@ -116,8 +117,8 @@ final class DictationController {
             lastTranscript = text
             NSLog("dictation audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
                   Double(samples.count) / AudioRecorder.sampleRate, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
-            state = fellBack ? .fallback("Cleanup skipped, raw text inserted") : .done
-            try? await Task.sleep(for: .milliseconds(fellBack ? 1200 : 300))
+            state = fellBack ? .fallback("Raw text inserted") : .done
+            try? await Task.sleep(for: .milliseconds(fellBack ? 1500 : 700))
             finish()
         }
     }
@@ -132,6 +133,23 @@ final class DictationController {
         state = .idle
         level = 0
         overlay.hide()
+    }
+
+    /// `--overlay-demo <dir>`: render every overlay state to <dir>/overlay-<state>.png and exit.
+    func demoOverlay(to dir: String) {
+        let states: [(String, State)] = [("listening", .listening), ("transcribing", .transcribing), ("cleaning", .cleaning),
+                                         ("done", .done), ("fallback", .fallback("Raw text inserted"))]
+        level = 0.08
+        for (name, s) in states {
+            state = s
+            let r = ImageRenderer(content: OverlayView(controller: self).frame(width: 300, height: 80).background(.blue.opacity(0.3)))
+            r.scale = 2
+            if let img = r.nsImage, let tiff = img.tiffRepresentation,
+               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try? png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("overlay-\(name).png"))
+            }
+        }
+        _exit(0)
     }
 
     private func ms(since d: Date) -> Int { Int(Date().timeIntervalSince(d) * 1000) }

@@ -8,7 +8,13 @@ struct LocalWhisperApp: App {
     init() {
         // Start after AppKit has finished launching; Metal init on a background thread before that stalls.
         NotificationCenter.default.addObserver(forName: NSApplication.didFinishLaunchingNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { DictationController.shared.start() }
+            MainActor.assumeIsolated {
+                if let i = CommandLine.arguments.firstIndex(of: "--overlay-demo"), i + 1 < CommandLine.arguments.count {
+                    DictationController.shared.demoOverlay(to: CommandLine.arguments[i + 1])
+                } else {
+                    DictationController.shared.start()
+                }
+            }
         }
     }
 
