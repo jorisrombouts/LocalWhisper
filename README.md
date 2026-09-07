@@ -12,7 +12,7 @@ Speech recognition (whisper.cpp, large-v3-turbo) and cleanup (Apple Intelligence
 ## Install
 
 ```sh
-git clone <this repository> LocalWhisper && cd LocalWhisper
+git clone https://github.com/jorisrombouts/LocalWhisper.git && cd LocalWhisper
 ./build-app.sh install
 ```
 
