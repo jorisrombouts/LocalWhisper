@@ -6,6 +6,7 @@ import Observation
 @MainActor
 @Observable
 final class DictationController {
+    static let shared = DictationController()
     enum State: Equatable {
         case idle, listening, transcribing, cleaning, done
         case fallback(String)
@@ -21,6 +22,7 @@ final class DictationController {
     private let hotkey = HotkeyMonitor()
     private let cleaner = Cleaner()
     private var engine: WhisperEngine?
+    private var started = false
     @ObservationIgnored private lazy var overlay = RecordingOverlay(controller: self)
 
     static func modelURL() -> URL? {
@@ -32,6 +34,8 @@ final class DictationController {
     }
 
     func start() {
+        guard !started else { return }
+        started = true
         recorder.onLevel = { [self] l in Task { @MainActor in level = l } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
@@ -41,11 +45,14 @@ final class DictationController {
 
         guard let url = Self.modelURL() else { problem = "Model file ggml-large-v3-turbo.bin not found"; return }
         Task.detached { [self] in
+            let t0 = Date()
             do {
                 let e = try WhisperEngine(modelPath: url.path)
                 await e.warmUp()
                 await MainActor.run { engine = e }
+                NSLog("engine ready in %d ms", Int(Date().timeIntervalSince(t0) * 1000))
             } catch {
+                NSLog("engine failed: %@", error.localizedDescription)
                 await MainActor.run { problem = error.localizedDescription }
             }
         }

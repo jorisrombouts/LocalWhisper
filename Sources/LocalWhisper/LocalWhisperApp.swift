@@ -1,9 +1,16 @@
 import SwiftUI
 
 struct LocalWhisperApp: App {
-    @State private var controller = DictationController()
+    private let controller = DictationController.shared
     @AppStorage(Settings.cleanupEnabledKey) private var cleanupEnabled = true
     @State private var launchAtLogin = Settings.launchAtLogin
+
+    init() {
+        // Start after AppKit has finished launching; Metal init on a background thread before that stalls.
+        NotificationCenter.default.addObserver(forName: NSApplication.didFinishLaunchingNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { DictationController.shared.start() }
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra {
