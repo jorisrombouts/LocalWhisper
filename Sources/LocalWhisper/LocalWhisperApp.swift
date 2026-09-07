@@ -23,13 +23,13 @@ struct LocalWhisperApp: App {
             Text(status)
             if let p = controller.problem {
                 Text(p)
-                Button("Open System Settings") { openSettings(for: p) }
+                Button("Open System Settings…") { openSettings(for: p) }
             }
             Divider()
-            Toggle("Clean up with Apple Intelligence", isOn: $cleanupEnabled)
+            Toggle("Clean Up with Apple Intelligence", isOn: $cleanupEnabled)
                 .disabled(controller.cleanupUnavailable != nil)
             if let r = controller.cleanupUnavailable { Text(r) }
-            Toggle("Launch at login", isOn: $launchAtLogin)
+            Toggle("Launch at Login", isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, v in Settings.launchAtLogin = v; launchAtLogin = Settings.launchAtLogin }
             Divider()
             if !controller.lastTranscript.isEmpty {
@@ -56,7 +56,7 @@ struct LocalWhisperApp: App {
 
     @ViewBuilder private var menuIcon: some View {
         switch controller.state {
-        case .listening: Image(systemName: "waveform.badge.mic").foregroundStyle(.red)
+        case .listening: Image(systemName: "waveform.badge.mic")
         case .transcribing, .cleaning: Image(systemName: "waveform").symbolEffect(.variableColor)
         default: Image(systemName: "waveform")
         }
