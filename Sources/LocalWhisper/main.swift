@@ -1,8 +1,26 @@
 import Foundation
 import AVFoundation
 
-// Step 1 harness: `LocalWhisper --transcribe file.wav`
+import AppKit
+
 let args = CommandLine.arguments
+
+// Step 6 harness: `LocalWhisper --clean "raw text"`
+if let i = args.firstIndex(of: "--clean"), i + 1 < args.count {
+    if let r = Cleaner.unavailableReason { print(r); exit(1) }
+    let cleaner = Cleaner()
+    Task { @MainActor in
+        await cleaner.warmUp()
+        let t0 = Date()
+        let (out, ok) = await cleaner.clean(args[i + 1])
+        print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", ok)
+        print("text:", out)
+        exit(0)
+    }
+    RunLoop.main.run()
+}
+
+// Step 1 harness: `LocalWhisper --transcribe file.wav`
 if let i = args.firstIndex(of: "--transcribe"), i + 1 < args.count {
     let modelPath = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
@@ -69,3 +87,9 @@ func loadSamples16k(_ url: URL) throws -> [Float] {
     if let err { throw err }
     return Array(UnsafeBufferPointer(start: outBuf.floatChannelData![0], count: Int(outBuf.frameLength)))
 }
+
+// Normal launch: the menu bar app.
+NSApplication.shared.setActivationPolicy(.accessory)
+let app = LocalWhisperApp()
+_ = app
+LocalWhisperApp.main()
