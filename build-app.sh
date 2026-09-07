@@ -10,6 +10,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Framewor
 cp .build/release/LocalWhisper "$APP/Contents/MacOS/"
 cp -R Frameworks/whisper.xcframework/macos-arm64_x86_64/whisper.framework "$APP/Contents/Frameworks/"
 cp -c Resources/ggml-large-v3-turbo.bin "$APP/Contents/Resources/"   # APFS clone, instant
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/LocalWhisper"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
@@ -19,6 +20,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleIdentifier</key><string>nl.joris.localwhisper</string>
   <key>CFBundleName</key><string>LocalWhisper</string>
   <key>CFBundleExecutable</key><string>LocalWhisper</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>0.1</string>
   <key>CFBundleVersion</key><string>1</string>

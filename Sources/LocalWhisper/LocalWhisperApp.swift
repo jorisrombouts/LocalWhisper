@@ -56,9 +56,9 @@ struct LocalWhisperApp: App {
 
     @ViewBuilder private var menuIcon: some View {
         switch controller.state {
-        case .listening: Image(systemName: "mic.fill").foregroundStyle(.red)
+        case .listening: Image(systemName: "waveform.badge.mic").foregroundStyle(.red)
         case .transcribing, .cleaning: Image(systemName: "waveform").symbolEffect(.variableColor)
-        default: Image(systemName: "mic")
+        default: Image(systemName: "waveform")
         }
     }
 
