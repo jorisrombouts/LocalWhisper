@@ -31,6 +31,10 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </dict></plist>
 PLIST
 
-# ponytail: ad-hoc signature; use `-s "Apple Development: ..."` once Xcode + a Personal Team are installed so TCC grants survive rebuilds
-codesign --force --deep -s "${CODESIGN_IDENTITY:--}" "$APP"
+# Sign with "LocalWhisper Dev" (see make-signing-cert.sh) so Accessibility grants survive rebuilds; ad-hoc otherwise.
+if [ -z "${CODESIGN_IDENTITY:-}" ]; then
+  if security find-identity -v -p codesigning | grep -q "LocalWhisper Dev"; then CODESIGN_IDENTITY="LocalWhisper Dev"; else CODESIGN_IDENTITY="-"; fi
+fi
+codesign --force --deep -s "$CODESIGN_IDENTITY" "$APP"
+echo "signed with: $CODESIGN_IDENTITY"
 codesign --verify --deep --strict "$APP" && echo "built $APP"
