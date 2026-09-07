@@ -22,7 +22,7 @@ final class RecordingOverlay {
         let size = OverlayView.canvas
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
         guard let frame = screen?.visibleFrame else { return }
-        panel.setFrame(NSRect(x: frame.midX - size.width / 2, y: frame.minY + 80, width: size.width, height: size.height), display: true)
+        panel.setFrame(NSRect(x: frame.midX - size.width / 2, y: frame.minY + 4, width: size.width, height: size.height), display: true)
         panel.orderFrontRegardless()   // never makeKey: focus must stay in the target app
     }
 
