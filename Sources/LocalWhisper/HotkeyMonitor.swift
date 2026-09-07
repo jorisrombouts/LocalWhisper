@@ -10,7 +10,7 @@ final class HotkeyMonitor {
     var onRelease: () -> Void = {}
     var onCancel: () -> Void = {}
 
-    private(set) var isHeld = false
+    private var isHeld = false
     private var cancelled = false
     private var monitors: [Any] = []
 

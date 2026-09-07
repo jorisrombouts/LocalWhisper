@@ -1,10 +1,6 @@
 import SwiftUI
 import AppKit
 
-for n in ["waveform", "waveform.badge.mic", "waveform.badge.magnifyingglass"] {
-    print(n, NSImage(systemSymbolName: n, accessibilityDescription: nil) != nil ? "ok" : "MISSING")
-}
-
 struct Icon: View {
     var body: some View {
         ZStack {

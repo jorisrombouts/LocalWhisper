@@ -5,11 +5,8 @@ import SwiftUI
 @MainActor
 final class RecordingOverlay {
     private let panel: NSPanel
-    private let hosting: NSHostingView<OverlayView>
 
     init(controller: DictationController) {
-        hosting = NSHostingView(rootView: OverlayView(controller: controller))
-        hosting.sizingOptions = [.preferredContentSize]
         panel = NSPanel(contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless], backing: .buffered, defer: false)
         panel.level = .floating
         panel.ignoresMouseEvents = true
@@ -18,7 +15,7 @@ final class RecordingOverlay {
         panel.backgroundColor = .clear
         panel.hasShadow = false   // the capsule draws its own shadow; a window shadow lags behind the animation
         panel.hidesOnDeactivate = false
-        panel.contentView = hosting
+        panel.contentView = NSHostingView(rootView: OverlayView(controller: controller))
     }
 
     func show() {

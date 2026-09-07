@@ -9,7 +9,6 @@ enum TextInserter {
         let saved = pb.string(forType: .string)
         pb.clearContents()
         let wrote = pb.setString(text, forType: .string)
-        if !CGPreflightPostEventAccess() { _ = CGRequestPostEventAccess() }
         NSLog("insert: ax_trusted=%d post_event_ok=%d pasteboard_wrote=%d chars=%d front=%@",
               AXIsProcessTrusted() ? 1 : 0, CGPreflightPostEventAccess() ? 1 : 0, wrote ? 1 : 0, text.count,
               NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "?")

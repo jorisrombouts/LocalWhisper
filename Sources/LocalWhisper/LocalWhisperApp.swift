@@ -3,7 +3,6 @@ import SwiftUI
 struct LocalWhisperApp: App {
     private let controller = DictationController.shared
     @AppStorage(Settings.cleanupEnabledKey) private var cleanupEnabled = true
-    @State private var launchAtLogin = Settings.launchAtLogin
 
     init() {
         // Start after AppKit has finished launching; Metal init on a background thread before that stalls.
@@ -29,8 +28,7 @@ struct LocalWhisperApp: App {
             Toggle("Clean Up with Apple Intelligence", isOn: $cleanupEnabled)
                 .disabled(controller.cleanupUnavailable != nil)
             if let r = controller.cleanupUnavailable { Text(r) }
-            Toggle("Launch at Login", isOn: $launchAtLogin)
-                .onChange(of: launchAtLogin) { _, v in Settings.launchAtLogin = v; launchAtLogin = Settings.launchAtLogin }
+            Toggle("Launch at Login", isOn: Binding(get: { Settings.launchAtLogin }, set: { Settings.launchAtLogin = $0 }))
             Divider()
             if !controller.lastTranscript.isEmpty {
                 Text("Last: " + controller.lastTranscript.prefix(80))
