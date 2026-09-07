@@ -77,7 +77,7 @@ struct OverlayView: View {
 
     private var label: some View {
         Text(text)
-            .font(.system(size: 13, weight: .medium))
+            .font(.body.weight(.medium))
             .fixedSize()
             .id(text)   // new text fades in while the capsule springs to its new width
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
