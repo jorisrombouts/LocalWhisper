@@ -1,0 +1,6 @@
+.build/
+build/
+*.app
+Resources/*.bin
+Frameworks/
+.DS_Store
