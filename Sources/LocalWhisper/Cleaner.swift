@@ -4,7 +4,6 @@ import Foundation
 /// On-device cleanup of raw transcripts via Apple's FoundationModels.
 @MainActor
 final class Cleaner {
-    static let timeout: Duration = .seconds(1.5)
 
     static let instructions = """
     You are a transcript editor. The user sends a raw speech-to-text transcript. Reply with only the edited transcript.
@@ -42,13 +41,15 @@ final class Cleaner {
     }
 
     /// Cleaned text, or nil on timeout, error or empty output.
-    func clean(_ raw: String) async -> String? {
+    /// Measured: about 0.5 s plus 30 ms per second of audio, so the timeout scales with the clip.
+    func clean(_ raw: String, audioSeconds: Double) async -> String? {
+        let timeout: Duration = .seconds(1.5 + 0.05 * audioSeconds)
         if session.isResponding { session = LanguageModelSession(instructions: Self.instructions) }
         let s = session
         let respond = Task { try await s.respond(to: "Transcript: " + raw, options: GenerationOptions(temperature: 0)).content }
         let result: String? = await withTaskGroup(of: String?.self) { g in
             g.addTask { try? await respond.value }
-            g.addTask { try? await Task.sleep(for: Self.timeout); return nil }
+            g.addTask { try? await Task.sleep(for: timeout); return nil }
             let first = await g.next() ?? nil
             g.cancelAll(); respond.cancel()
             return first

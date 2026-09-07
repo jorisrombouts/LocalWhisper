@@ -10,7 +10,7 @@ if let i = args.firstIndex(of: "--clean"), i + 1 < args.count {
     Task { @MainActor in
         await cleaner.warmUp()
         let t0 = Date()
-        let out = await cleaner.clean(args[i + 1])
+        let out = await cleaner.clean(args[i + 1], audioSeconds: Double(args[i + 1].count) / 15)   // ~15 chars per second of speech
         print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", out != nil)
         print("text:", out ?? "(fallback)")
         exit(0)
