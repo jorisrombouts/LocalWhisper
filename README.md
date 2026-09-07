@@ -1,7 +1,7 @@
 # LocalWhisper
 
 Hold Left Option, speak, release. The text appears at your cursor, in any app.
-Speech recognition (whisper.cpp, large-v3-turbo) and cleanup (Apple Intelligence) run on your Mac. Nothing leaves it.
+Speech recognition runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model, cleanup on Apple Intelligence. Everything runs on your Mac. Nothing leaves it.
 
 ## Requirements
 
@@ -41,6 +41,17 @@ Measured on an M4 Pro, from key release to text at the cursor. Timings for your 
 
 Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves only the recognition column.
 
+## Size
+
+| Component | Size |
+|---|---|
+| Model (ggml-large-v3-turbo) | 1.5 GB |
+| whisper.cpp framework | 5.9 MB |
+| App icon | 1.2 MB |
+| App binary | 356 KB |
+
+The Swift source is about 650 lines in 10 files.
+
 ## Privacy
 
 No network calls. The model and Apple Intelligence run on-device. Your clipboard is restored after the paste.
@@ -50,10 +61,6 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 - The pill says "Inserted" but nothing was pasted: Accessibility is missing or stale. Run `tccutil reset Accessibility nl.joris.localwhisper`, relaunch the app, grant it again.
 - Timings per dictation and engine output are in `~/Library/Logs/LocalWhisper.log`.
 - If you rebuild often, run `./make-signing-cert.sh` once so permissions survive rebuilds.
-
-## Credits
-
-Built on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) by Georgi Gerganov and contributors (MIT), using its prebuilt framework and the `ggml-large-v3-turbo` model derived from OpenAI's Whisper. Cleanup uses Apple's on-device Foundation Models.
 
 ## Development
 
