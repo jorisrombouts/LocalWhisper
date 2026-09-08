@@ -14,7 +14,8 @@ final class DictationController {
     }
 
     private(set) var state: State = .idle
-    private(set) var level: Float = 0
+    private(set) var level: Float = 0      // 0...1, relative to a slowly decaying peak so the meter fills at any input volume
+    private var peakHold: Float = 0.01
     private(set) var lastTranscript = ""
     private(set) var problem: String?          // shown in the menu
     private var engineProblem: String?
@@ -39,7 +40,7 @@ final class DictationController {
         guard !started else { return }
         started = true
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
-        recorder.onLevel = { [self] l in Task { @MainActor in level = l } }
+        recorder.onLevel = { [self] l in Task { @MainActor in peakHold = max(l, peakHold * 0.98, 0.003); level = l / peakHold } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
         hotkey.onCancel = { [self] in cancel() }
@@ -134,7 +135,7 @@ final class DictationController {
     func demoOverlay(to dir: String) {
         let states: [(String, State)] = [("listening", .listening), ("transcribing", .transcribing), ("cleaning", .cleaning),
                                          ("done", .done), ("fallback", .fallback("Raw text inserted"))]
-        level = 0.08
+        level = 0.7
         for (name, s) in states {
             state = s
             let r = ImageRenderer(content: OverlayView(controller: self).background(.blue.opacity(0.3)))
