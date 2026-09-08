@@ -3,6 +3,7 @@ import SwiftUI
 struct LocalWhisperApp: App {
     private let controller = DictationController.shared
     @AppStorage(Settings.cleanupEnabledKey) private var cleanupEnabled = true
+    @AppStorage(Settings.inputDeviceKey) private var inputDevice = ""
 
     init() {
         // Start after AppKit has finished launching; Metal init on a background thread before that stalls.
@@ -23,6 +24,12 @@ struct LocalWhisperApp: App {
                 .disabled(controller.cleanupUnavailable != nil)
             if let r = controller.cleanupUnavailable { Text(r) }
             Toggle("Launch at Login", isOn: Binding(get: { Settings.launchAtLogin }, set: { Settings.launchAtLogin = $0 }))
+            Picker("Microphone", selection: $inputDevice) {
+                Text("Automatic (built-in)").tag("")
+                ForEach(AudioRecorder.inputDevices(), id: \.uniqueID) {
+                    Text($0.localizedName).tag($0.uniqueID)
+                }
+            }
             Divider()
             if !controller.lastTranscript.isEmpty {
                 Text("Last: " + controller.lastTranscript.prefix(80))
