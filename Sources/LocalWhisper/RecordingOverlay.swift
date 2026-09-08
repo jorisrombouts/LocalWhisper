@@ -97,11 +97,12 @@ struct LevelBars: View {
     var body: some View {
         HStack(spacing: 3) {
             ForEach(0..<6, id: \.self) { i in
-                // Spread the single RMS value across bars with a per-bar weight so they move differently.
+                // Loudness in dB, -50 (silence) to -10 (loud speech) across the bar height; per-bar weights so they differ.
                 let weight = [0.6, 0.9, 1.0, 1.0, 0.8, 0.5][i]
+                let loud = min(1, max(0, (20 * log10(Double(max(level, 1e-5))) + 50) / 40))
                 Capsule()
                     .fill(.primary)
-                    .frame(width: 3, height: 4 + CGFloat(min(1, Double(level) * 12) * weight) * 14)
+                    .frame(width: 3, height: 4 + CGFloat(loud * weight) * 14)
             }
         }
         .frame(height: 18)
