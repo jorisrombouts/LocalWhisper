@@ -9,7 +9,6 @@ final class AudioRecorder: @unchecked Sendable {
     var onLevel: (@Sendable (Float) -> Void)?
 
     private var engine = AVAudioEngine()
-    private var boundDevice = AudioDeviceID(0)
     private let lock = NSLock()
     private var samples: [Float] = []
     private var converter: AVAudioConverter?
@@ -20,14 +19,13 @@ final class AudioRecorder: @unchecked Sendable {
         let t0 = Date()
         // Always bind a concrete device. Leaving the engine on CoreAudio's per-process default aggregate
         // records silence after the default changes sample rate (AirPods 24 kHz vs built-in 48 kHz).
-        // Rebuilding the engine costs a few hundred ms (words get lost), so only do it when the device changes.
-        let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
-        if var id = Self.deviceID(uid: uid) ?? Self.builtInID() ?? Self.defaultInputID(), id != boundDevice {
-            engine = AVAudioEngine()
-            AudioUnitSetProperty(engine.inputNode.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
-            boundDevice = id
-        }
+        // A fresh engine per press: reusing one across a device switch leaves it with a stale format and no audio.
+        engine = AVAudioEngine()
         let input = engine.inputNode
+        let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
+        if var id = Self.deviceID(uid: uid) ?? Self.builtInID() ?? Self.defaultInputID() {
+            AudioUnitSetProperty(input.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
+        }
         let native = input.outputFormat(forBus: 0)
         guard native.sampleRate > 0 else { throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "No input device"]) }
         converter = AVAudioConverter(from: native, to: Self.format)
@@ -95,6 +93,7 @@ final class AudioRecorder: @unchecked Sendable {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         let out = lock.withLock { samples }
+        NSLog("mic stopped: %.2f s", Double(out.count) / Self.sampleRate)
         return Double(out.count) / Self.sampleRate < Self.minSeconds ? nil : out
     }
 
