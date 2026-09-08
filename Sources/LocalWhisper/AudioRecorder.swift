@@ -9,6 +9,7 @@ final class AudioRecorder: @unchecked Sendable {
     var onLevel: (@Sendable (Float) -> Void)?
 
     private var engine = AVAudioEngine()
+    private var boundDevice = AudioDeviceID(0)
     private let lock = NSLock()
     private var samples: [Float] = []
     private var converter: AVAudioConverter?
@@ -16,14 +17,17 @@ final class AudioRecorder: @unchecked Sendable {
 
     func start() throws {
         lock.withLock { samples.removeAll(keepingCapacity: true) }
-        engine = AVAudioEngine()   // fresh per press so the device below is applied cleanly
-        let input = engine.inputNode
+        let t0 = Date()
         // Always bind a concrete device. Leaving the engine on CoreAudio's per-process default aggregate
         // records silence after the default changes sample rate (AirPods 24 kHz vs built-in 48 kHz).
+        // Rebuilding the engine costs a few hundred ms (words get lost), so only do it when the device changes.
         let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
-        if var id = Self.deviceID(uid: uid) ?? Self.defaultInputID() {
-            AudioUnitSetProperty(input.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
+        if var id = Self.deviceID(uid: uid) ?? Self.defaultInputID(), id != boundDevice {
+            engine = AVAudioEngine()
+            AudioUnitSetProperty(engine.inputNode.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
+            boundDevice = id
         }
+        let input = engine.inputNode
         let native = input.outputFormat(forBus: 0)
         guard native.sampleRate > 0 else { throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "No input device"]) }
         converter = AVAudioConverter(from: native, to: Self.format)
@@ -33,7 +37,7 @@ final class AudioRecorder: @unchecked Sendable {
         }
         engine.prepare()
         try engine.start()
-        NSLog("mic: %@ (%d Hz)", Self.inputDeviceName(input), Int(native.sampleRate))
+        NSLog("mic: %@ (%d Hz) started in %d ms", Self.inputDeviceName(input), Int(native.sampleRate), Int(Date().timeIntervalSince(t0) * 1000))
     }
 
     /// CoreAudio device id for a device UID, nil when that device is not connected (then the default is used).
