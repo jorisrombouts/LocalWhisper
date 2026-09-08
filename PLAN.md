@@ -35,7 +35,7 @@ LocalWhisper/
 │   ├── LocalWhisperApp.swift # MenuBarExtra; starts the controller on didFinishLaunching
 │   ├── DictationController.swift # singleton state machine: idle → listening → transcribing → cleaning → done
 │   ├── HotkeyMonitor.swift   # NSEvent global + local monitors for flagsChanged / keyDown
-│   ├── AudioRecorder.swift   # AVAudioEngine tap → 16 kHz mono [Float], RMS level
+│   ├── AudioRecorder.swift   # AVCaptureSession on the chosen mic → 16 kHz mono [Float], RMS level
 │   ├── WhisperEngine.swift   # actor over whisper.h
 │   ├── Cleaner.swift         # FoundationModels session + timeout race
 │   ├── TextInserter.swift    # pasteboard save / set / ⌘V / restore, with a diagnostics log line
@@ -63,8 +63,10 @@ Each step is runnable on its own; its check proves it before the next step.
 - A top-level `Task {}` in `main.swift` is main-actor isolated; blocking main with a semaphore deadlocks. Use `Task.detached` or `RunLoop.main.run()`. Exit harnesses with `_exit` after `fflush`; ggml-metal asserts in its `atexit` handler.
 
 ### Step 2 — Audio capture (`AudioRecorder.swift`)
-- Tap at the native format, `AVAudioConverter` to 16 kHz mono Float32, accumulate under a lock, RMS per buffer for the level meter.
-- Discard clips under 0.4 s.
+- `AVCaptureSession` with an explicit `AVCaptureDeviceInput`: the picked microphone, else the built-in one, else the system default. `AVAudioConverter` to 16 kHz mono Float32, accumulate under a lock, RMS per buffer for the level meter.
+- Binding a device onto `AVAudioEngine`'s input node breaks on Bluetooth headsets, which renegotiate their sample rate right after the mic opens. Bluetooth headsets also lose the first half second to that switch, so the built-in mic is the automatic choice.
+- Hide virtual and aggregate devices (Teams and Zoom loopbacks, CoreAudio's own aggregates) by CoreAudio transport type.
+- Discard clips under 0.4 s. Log the device and the captured seconds per dictation.
 - Check: the engine harness on a recorded clip. Done when speech comes back as text and silence comes back empty.
 
 ### Step 3 — Hotkey (`HotkeyMonitor.swift`)
@@ -94,7 +96,7 @@ Each step is runnable on its own; its check proves it before the next step.
 - The panel gets a fixed 360×80 transparent frame; the SwiftUI capsule sizes itself to its content inside it and springs between states. Sizing the panel once to the first state's content clips every later state.
 - `ProgressView` does not render inside the panel; use SF Symbol effects (`variableColor` on `waveform`, `pulse` on `sparkles`).
 - Menu bar icon: monochrome SF Symbols only, `waveform` idle, `waveform.badge.mic` listening. macOS's orange dot already shows recording.
-- Menu: status, problem line with an "Open System Settings…" button, cleanup toggle, Launch at Login, last transcript, Quit (`_exit`).
+- Menu: status, problem line with an "Open System Settings…" button, microphone picker, cleanup toggle, Launch at Login, last transcript, Quit (`_exit`).
 - Check: `LocalWhisper --overlay-demo <dir>` renders every state to PNG.
 
 ### Step 8 — Bundle, sign, install (`build-app.sh`)
