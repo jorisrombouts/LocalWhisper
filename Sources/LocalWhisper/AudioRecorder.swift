@@ -16,9 +16,12 @@ final class AudioRecorder: @unchecked Sendable {
 
     func start() throws {
         lock.withLock { samples.removeAll(keepingCapacity: true) }
-        engine = AVAudioEngine()   // a fresh engine binds to the current default input (lid closed, dock, headset)
+        engine = AVAudioEngine()   // fresh per press so the device below is applied cleanly
         let input = engine.inputNode
-        if let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey), var id = Self.deviceID(uid: uid) {
+        // Always bind a concrete device. Leaving the engine on CoreAudio's per-process default aggregate
+        // records silence after the default changes sample rate (AirPods 24 kHz vs built-in 48 kHz).
+        let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
+        if var id = Self.deviceID(uid: uid) ?? Self.defaultInputID() {
             AudioUnitSetProperty(input.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
         }
         let native = input.outputFormat(forBus: 0)
@@ -43,14 +46,22 @@ final class AudioRecorder: @unchecked Sendable {
         return status == noErr && id != 0 ? id : nil
     }
 
-    /// Loopback drivers such as Teams or Zoom show up as microphones; hide them.
+    static func defaultInputID() -> AudioDeviceID? {
+        var addr = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultInputDevice, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        var id = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        let status = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &id)
+        return status == noErr && id != 0 ? id : nil
+    }
+
+    /// Loopback drivers (Teams, Zoom) and CoreAudio's own aggregate devices show up as microphones; hide them.
     static func isVirtual(uid: String) -> Bool {
         guard let id = deviceID(uid: uid) else { return false }
         var addr = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyTransportType, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
         var transport = UInt32(0)
         var size = UInt32(MemoryLayout<UInt32>.size)
         AudioObjectGetPropertyData(id, &addr, 0, nil, &size, &transport)
-        return transport == kAudioDeviceTransportTypeVirtual
+        return transport == kAudioDeviceTransportTypeVirtual || transport == kAudioDeviceTransportTypeAggregate
     }
 
     private static func inputDeviceName(_ input: AVAudioInputNode) -> String {
