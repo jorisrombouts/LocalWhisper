@@ -43,9 +43,9 @@ final class DictationController {
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
         recorder.onLevel = { [self] l in Task { @MainActor in
             // Meter like the system ones: nothing below the noise floor, full at the recent peak, fast rise and slow fall.
-            noiseFloor = min(l, noiseFloor * 1.02)                       // drops at once, creeps up slowly
-            peakHold = max(l, peakHold * 0.98, noiseFloor * 4)           // recent peak, never within 4x of the floor
-            let rel = max(0, l - noiseFloor * 2) / max(peakHold - noiseFloor * 2, 1e-4)
+            if l < peakHold * 0.25 { noiseFloor += (l - noiseFloor) * 0.05 }   // average of the quiet stretches
+            peakHold = max(l, peakHold * 0.98, noiseFloor * 5)                  // recent peak, never within 5x of the floor
+            let rel = max(0, l - noiseFloor * 3) / max(peakHold - noiseFloor * 3, 1e-4)   // noise varies ~2x; 3x is the dead zone
             level = max(rel, level * 0.8)
         } }
         hotkey.onPress = { [self] in press() }
