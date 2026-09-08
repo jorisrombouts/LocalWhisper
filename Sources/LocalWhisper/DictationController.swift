@@ -14,7 +14,8 @@ final class DictationController {
     }
 
     private(set) var state: State = .idle
-    private(set) var level: Float = 0      // 0...1, relative to a slowly decaying peak so the meter fills at any input volume
+    private(set) var level: Float = 0      // 0...1 for the meter, see onLevel below
+    private var noiseFloor: Float = 0.01
     private var peakHold: Float = 0.01
     private(set) var lastTranscript = ""
     private(set) var problem: String?          // shown in the menu
@@ -40,7 +41,13 @@ final class DictationController {
         guard !started else { return }
         started = true
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
-        recorder.onLevel = { [self] l in Task { @MainActor in peakHold = max(l, peakHold * 0.98, 0.003); level = l / peakHold } }
+        recorder.onLevel = { [self] l in Task { @MainActor in
+            // Meter like the system ones: nothing below the noise floor, full at the recent peak, fast rise and slow fall.
+            noiseFloor = min(l, noiseFloor * 1.02)                       // drops at once, creeps up slowly
+            peakHold = max(l, peakHold * 0.98, noiseFloor * 4)           // recent peak, never within 4x of the floor
+            let rel = max(0, l - noiseFloor * 2) / max(peakHold - noiseFloor * 2, 1e-4)
+            level = max(rel, level * 0.8)
+        } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
         hotkey.onCancel = { [self] in cancel() }
