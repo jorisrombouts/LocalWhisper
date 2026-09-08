@@ -1,4 +1,3 @@
-import AVFoundation
 import SwiftUI
 
 struct LocalWhisperApp: App {
@@ -27,8 +26,7 @@ struct LocalWhisperApp: App {
             Toggle("Launch at Login", isOn: Binding(get: { Settings.launchAtLogin }, set: { Settings.launchAtLogin = $0 }))
             Picker("Microphone", selection: $inputDevice) {
                 Text("Automatic (built-in)").tag("")
-                ForEach(AVCaptureDevice.DiscoverySession(deviceTypes: [.microphone, .external], mediaType: .audio, position: .unspecified).devices
-                            .filter { !AudioRecorder.isVirtual(uid: $0.uniqueID) }, id: \.uniqueID) {
+                ForEach(AudioRecorder.inputDevices(), id: \.uniqueID) {
                     Text($0.localizedName).tag($0.uniqueID)
                 }
             }
