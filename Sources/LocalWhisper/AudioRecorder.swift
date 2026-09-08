@@ -9,6 +9,7 @@ final class AudioRecorder: @unchecked Sendable {
     var onLevel: (@Sendable (Float) -> Void)?
 
     private var engine = AVAudioEngine()
+    private var observer: Any?
     private let lock = NSLock()
     private var samples: [Float] = []
     private var converter: AVAudioConverter?
@@ -16,16 +17,24 @@ final class AudioRecorder: @unchecked Sendable {
 
     func start() throws {
         lock.withLock { samples.removeAll(keepingCapacity: true) }
-        let t0 = Date()
-        // Always bind a concrete device. Leaving the engine on CoreAudio's per-process default aggregate
-        // records silence after the default changes sample rate (AirPods 24 kHz vs built-in 48 kHz).
         // A fresh engine per press: reusing one across a device switch leaves it with a stale format and no audio.
         engine = AVAudioEngine()
-        let input = engine.inputNode
         let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
         if var id = Self.deviceID(uid: uid) ?? Self.builtInID() ?? Self.defaultInputID() {
-            AudioUnitSetProperty(input.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
+            AudioUnitSetProperty(engine.inputNode.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
         }
+        try attach()
+        // Bluetooth headsets renegotiate their sample rate right after the mic opens; the engine stops and
+        // posts this. Re-attach with the new format or the clip stays empty.
+        observer = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main) { [weak self] _ in
+            NSLog("mic: configuration changed, restarting")
+            try? self?.attach()
+        }
+    }
+
+    private func attach() throws {
+        let t0 = Date()
+        let input = engine.inputNode
         let native = input.outputFormat(forBus: 0)
         guard native.sampleRate > 0 else { throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "No input device"]) }
         converter = AVAudioConverter(from: native, to: Self.format)
@@ -90,6 +99,7 @@ final class AudioRecorder: @unchecked Sendable {
 
     /// Returns the samples, or nil when the clip is too short to be worth transcribing.
     func stop() -> [Float]? {
+        if let observer { NotificationCenter.default.removeObserver(observer) }
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         let out = lock.withLock { samples }
