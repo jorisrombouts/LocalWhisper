@@ -24,7 +24,7 @@ macOS asks for two permissions on first use: Microphone, and Accessibility, whic
 - Hold Left Option, speak, release. Pressing any other key while holding cancels, so Option shortcuts like `€` or `@` still work.
 - A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted.
 - The language is detected automatically. Dutch, English and Swedish are verified.
-- The menu has a cleanup toggle, Launch at Login, the last transcript, and Quit.
+- The menu has a microphone picker, a cleanup toggle, Launch at Login, the last transcript, and Quit. "Automatic" uses the built-in microphone; Bluetooth headsets work when picked but lose the first half second to their profile switch.
 
 Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-corrections such as "no wait". It never translates. Dictations under four words are inserted as is.
 
@@ -69,5 +69,4 @@ A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/L
 ## Not yet
 
 - Core ML encoder on the Neural Engine: recognition from 0.9 s to about 0.4 s, at the cost of 1.3 GB more disk and memory and a few minutes of compile on first launch. Planned.
-- Microphone picker in the menu, for docked use with the lid closed.
 - Level bars scaled in decibels, so quiet microphones still show movement.
