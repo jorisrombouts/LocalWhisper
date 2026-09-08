@@ -43,6 +43,7 @@ final class DictationController {
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
         recorder.onLevel = { [self] l in Task { @MainActor in
             // Meter like the system ones: nothing below the noise floor, full at the recent peak, fast rise and slow fall.
+            // ponytail: constants tuned on the built-in mic at 27% input volume; these are the knobs if another mic misbehaves
             if l < peakHold * 0.25 { noiseFloor += (l - noiseFloor) * 0.05 }   // average of the quiet stretches
             peakHold = max(l, peakHold * 0.98, noiseFloor * 5)                  // recent peak, never within 5x of the floor
             let rel = max(0, l - noiseFloor * 3) / max(peakHold - noiseFloor * 3, 1e-4)   // noise varies ~2x; 3x is the dead zone
