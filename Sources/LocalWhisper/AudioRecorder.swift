@@ -35,7 +35,7 @@ final class AudioRecorder: @unchecked Sendable {
     private func attach() throws {
         let t0 = Date()
         let input = engine.inputNode
-        let native = input.outputFormat(forBus: 0)
+        let native = input.inputFormat(forBus: 0)   // the hardware format; the node output format lags a Bluetooth rate switch
         guard native.sampleRate > 0 else { throw NSError(domain: "AudioRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "No input device"]) }
         converter = AVAudioConverter(from: native, to: Self.format)
         input.removeTap(onBus: 0)
