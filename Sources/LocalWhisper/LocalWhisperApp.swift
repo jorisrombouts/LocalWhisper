@@ -26,7 +26,7 @@ struct LocalWhisperApp: App {
             if let r = controller.cleanupUnavailable { Text(r) }
             Toggle("Launch at Login", isOn: Binding(get: { Settings.launchAtLogin }, set: { Settings.launchAtLogin = $0 }))
             Picker("Microphone", selection: $inputDevice) {
-                Text("System Default").tag("")
+                Text("Automatic (built-in)").tag("")
                 ForEach(AVCaptureDevice.DiscoverySession(deviceTypes: [.microphone, .external], mediaType: .audio, position: .unspecified).devices
                             .filter { !AudioRecorder.isVirtual(uid: $0.uniqueID) }, id: \.uniqueID) {
                     Text($0.localizedName).tag($0.uniqueID)

@@ -22,7 +22,7 @@ final class AudioRecorder: @unchecked Sendable {
         // records silence after the default changes sample rate (AirPods 24 kHz vs built-in 48 kHz).
         // Rebuilding the engine costs a few hundred ms (words get lost), so only do it when the device changes.
         let uid = UserDefaults.standard.string(forKey: Settings.inputDeviceKey) ?? ""
-        if var id = Self.deviceID(uid: uid) ?? Self.defaultInputID(), id != boundDevice {
+        if var id = Self.deviceID(uid: uid) ?? Self.builtInID() ?? Self.defaultInputID(), id != boundDevice {
             engine = AVAudioEngine()
             AudioUnitSetProperty(engine.inputNode.audioUnit!, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &id, UInt32(MemoryLayout<AudioDeviceID>.size))
             boundDevice = id
@@ -58,14 +58,25 @@ final class AudioRecorder: @unchecked Sendable {
         return status == noErr && id != 0 ? id : nil
     }
 
-    /// Loopback drivers (Teams, Zoom) and CoreAudio's own aggregate devices show up as microphones; hide them.
-    static func isVirtual(uid: String) -> Bool {
-        guard let id = deviceID(uid: uid) else { return false }
+    static func transport(of id: AudioDeviceID) -> UInt32 {
         var addr = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyTransportType, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
         var transport = UInt32(0)
         var size = UInt32(MemoryLayout<UInt32>.size)
         AudioObjectGetPropertyData(id, &addr, 0, nil, &size, &transport)
-        return transport == kAudioDeviceTransportTypeVirtual || transport == kAudioDeviceTransportTypeAggregate
+        return transport
+    }
+
+    /// Loopback drivers (Teams, Zoom) and CoreAudio's own aggregate devices show up as microphones; hide them.
+    static func isVirtual(uid: String) -> Bool {
+        guard let id = deviceID(uid: uid) else { return false }
+        return [kAudioDeviceTransportTypeVirtual, kAudioDeviceTransportTypeAggregate].contains(transport(of: id))
+    }
+
+    /// The built-in microphone: instant to start and best for speech. Bluetooth headsets lose the first
+    /// half second to their profile switch, so they are only used when picked explicitly.
+    static func builtInID() -> AudioDeviceID? {
+        AVCaptureDevice.DiscoverySession(deviceTypes: [.microphone], mediaType: .audio, position: .unspecified).devices
+            .compactMap { deviceID(uid: $0.uniqueID) }.first { transport(of: $0) == kAudioDeviceTransportTypeBuiltIn }
     }
 
     private static func inputDeviceName(_ input: AVAudioInputNode) -> String {
