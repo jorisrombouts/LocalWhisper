@@ -114,6 +114,18 @@ Each step is runnable on its own; its check proves it before the next step.
 - [x] Permissions granted once, survive rebuilds
 - [x] Zero network calls
 
-## 5. Not in v1
+## 5. Planned: Core ML encoder
 
-See "Future improvements" in `README.md`.
+Recognition from 0.9 s to about 0.4 s by running whisper's encoder on the Neural Engine. No Swift changes: the framework is built with `WHISPER_COREML` and `WHISPER_COREML_ALLOW_FALLBACK`, looks for `<model>-encoder.mlmodelc` next to the ggml file, and falls back to Metal when it is missing.
+
+1. `fetch-deps.sh`: download `ggml-large-v3-turbo-encoder.mlmodelc.zip` (1.17 GB) from `huggingface.co/ggerganov/whisper.cpp`, the same repository as the ggml model and what whisper.cpp's own bindings use; unzip to `Resources/ggml-large-v3-turbo-encoder.mlmodelc/`; same size guard as the model. The documented alternative is `models/generate-coreml-model.sh` in whisper.cpp, which needs Python. Add `Resources/*.mlmodelc` to `.gitignore`.
+2. `build-app.sh`: clone the directory into `Contents/Resources` next to the `.bin`.
+3. Measure with `--transcribe` and five real dictations; note the first-launch compile time from "engine ready in".
+4. Docs: README size table to about 2.8 GB with a line about the first-launch compile, speed table re-measured, AGENTS.md sources line.
+5. Rollback: delete the directory.
+
+Cost: 1.3 GB more on disk and in memory, and a few minutes of compile once per Mac.
+
+## 6. Not in v1
+
+See "Not yet" in `README.md`.
