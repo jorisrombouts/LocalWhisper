@@ -15,6 +15,7 @@ final class DictationController {
 
     private(set) var state: State = .idle
     private(set) var level: Float = 0      // 0...1 for the meter, see onLevel below
+    private var smooth: Float = 0
     private var noiseFloor: Float = 0.01
     private var peakHold: Float = 0.01
     private(set) var lastTranscript = ""
@@ -43,11 +44,13 @@ final class DictationController {
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
         recorder.onLevel = { [self] l in Task { @MainActor in
             // Meter like the system ones: nothing below the noise floor, full at the recent peak, fast rise and slow fall.
+            // Buffers arrive every 10 ms; room noise per buffer spans 0.0003 to 0.0015, so smooth first.
             // ponytail: constants tuned on the built-in mic at 27% input volume; these are the knobs if another mic misbehaves
-            if l < peakHold * 0.25 { noiseFloor += (l - noiseFloor) * 0.05 }   // average of the quiet stretches
-            peakHold = max(l, peakHold * 0.98, noiseFloor * 5)                  // recent peak, never within 5x of the floor
-            let rel = max(0, l - noiseFloor * 3) / max(peakHold - noiseFloor * 3, 1e-4)   // noise varies ~2x; 3x is the dead zone
-            level = max(rel, level * 0.8)
+            smooth += (l - smooth) * 0.2                                       // ~50 ms window
+            if smooth < peakHold * 0.3 { noiseFloor += (smooth - noiseFloor) * 0.02 }
+            peakHold = max(smooth, peakHold * 0.995, noiseFloor * 6)
+            let rel = max(0, smooth - noiseFloor * 2.5) / max(peakHold - noiseFloor * 2.5, 1e-4)
+            level = max(rel, level * 0.93)                                     // ~0.3 s release
         } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
