@@ -43,6 +43,16 @@ final class AudioRecorder: @unchecked Sendable {
         return status == noErr && id != 0 ? id : nil
     }
 
+    /// Loopback drivers such as Teams or Zoom show up as microphones; hide them.
+    static func isVirtual(uid: String) -> Bool {
+        guard let id = deviceID(uid: uid) else { return false }
+        var addr = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyTransportType, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+        var transport = UInt32(0)
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        AudioObjectGetPropertyData(id, &addr, 0, nil, &size, &transport)
+        return transport == kAudioDeviceTransportTypeVirtual
+    }
+
     private static func inputDeviceName(_ input: AVAudioInputNode) -> String {
         var id = AudioDeviceID(0)
         var size = UInt32(MemoryLayout<AudioDeviceID>.size)
