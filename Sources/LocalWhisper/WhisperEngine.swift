@@ -21,9 +21,9 @@ actor WhisperEngine {
     // Engine lives for the process lifetime; no deinit needed.
 
     /// A clip whose loudest 100 ms stays under this is silence: whisper answers silence with "Thank you." or "you".
-    /// Measured: a silent hold peaks under 0.002, speech at 0.03 and up.
+    /// Measured: a silent hold peaks under 0.002; speech at 27% input volume peaks around 0.009, at normal volume 0.03 and up.
     /// ponytail: fixed threshold; calibrate from `peak=` in the log if quiet speech gets dropped
-    static let silencePeak: Float = 0.01
+    static let silencePeak: Float = 0.005
 
     /// 16 kHz mono float samples in, text out.
     func transcribe(_ samples: [Float]) -> String {

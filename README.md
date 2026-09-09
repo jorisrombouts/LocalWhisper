@@ -69,4 +69,3 @@ A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/L
 ## Not yet
 
 - Core ML encoder on the Neural Engine: recognition from 0.9 s to about 0.4 s, at the cost of 1.3 GB more disk and memory and a few minutes of compile on first launch. Planned.
-- Level bars scaled in decibels, so quiet microphones still show movement.

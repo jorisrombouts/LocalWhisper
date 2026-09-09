@@ -14,7 +14,10 @@ final class DictationController {
     }
 
     private(set) var state: State = .idle
-    private(set) var level: Float = 0
+    private(set) var level: Float = 0      // 0...1 for the meter, see onLevel below
+    private var smooth: Float = 0
+    private var noiseFloor: Float = 0.01
+    private var peakHold: Float = 0.01
     private(set) var lastTranscript = ""
     private(set) var problem: String?          // shown in the menu
     private var engineProblem: String?
@@ -39,7 +42,16 @@ final class DictationController {
         guard !started else { return }
         started = true
         if let dir = arg(after: "--overlay-demo") { demoOverlay(to: dir) }
-        recorder.onLevel = { [self] l in Task { @MainActor in level = l } }
+        recorder.onLevel = { [self] l in Task { @MainActor in
+            // Meter like the system ones: nothing below the noise floor, full at the recent peak, fast rise and slow fall.
+            // Buffers arrive every 10 ms; room noise per buffer spans 0.0003 to 0.0015, so smooth first.
+            // ponytail: constants tuned on the built-in mic at 27% input volume; these are the knobs if another mic misbehaves
+            smooth += (l - smooth) * 0.2                                       // ~50 ms window
+            if smooth < peakHold * 0.3 { noiseFloor += (smooth - noiseFloor) * 0.02 }
+            peakHold = max(smooth, peakHold * 0.995, noiseFloor * 6)
+            let rel = max(0, smooth - noiseFloor * 2.5) / max(peakHold - noiseFloor * 2.5, 1e-4)
+            level = max(rel, level * 0.93)                                     // ~0.3 s release
+        } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
         hotkey.onCancel = { [self] in cancel() }
@@ -134,7 +146,7 @@ final class DictationController {
     func demoOverlay(to dir: String) {
         let states: [(String, State)] = [("listening", .listening), ("transcribing", .transcribing), ("cleaning", .cleaning),
                                          ("done", .done), ("fallback", .fallback("Raw text inserted"))]
-        level = 0.08
+        level = 0.7
         for (name, s) in states {
             state = s
             let r = ImageRenderer(content: OverlayView(controller: self).background(.blue.opacity(0.3)))
