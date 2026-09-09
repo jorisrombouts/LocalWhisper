@@ -61,7 +61,7 @@ final class AudioRecorder: NSObject, AVCaptureAudioDataOutputSampleBufferDelegat
               let pcm = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: AVAudioFrameCount(CMSampleBufferGetNumSamples(sb))) else { return }
         pcm.frameLength = pcm.frameCapacity
         guard CMSampleBufferCopyPCMDataIntoAudioBufferList(sb, at: 0, frameCount: Int32(pcm.frameLength), into: pcm.mutableAudioBufferList) == noErr else { return }
-        if converter == nil { converter = AVAudioConverter(from: fmt, to: Self.format) }
+        if converter?.inputFormat != fmt { converter = AVAudioConverter(from: fmt, to: Self.format) }   // the first buffer after a device switch can still carry the old format
         guard let converter else { return }
         let chunk = Self.resample(pcm, with: converter)
         guard !chunk.isEmpty else { return }
