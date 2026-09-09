@@ -5,9 +5,8 @@ import CoreAudio
 /// AVCaptureSession is the API for recording from a specific device; binding a device onto AVAudioEngine's
 /// input node breaks on Bluetooth headsets, which renegotiate their sample rate right after the mic opens.
 final class AudioRecorder: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate, @unchecked Sendable {
-    static let sampleRate = 16_000.0
     static let minSeconds = 0.4
-    static let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
+    static let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16_000, channels: 1, interleaved: false)!
 
     var onLevel: (@Sendable (Float) -> Void)?
 
@@ -51,8 +50,9 @@ final class AudioRecorder: NSObject, AVCaptureAudioDataOutputSampleBufferDelegat
     func stop() -> [Float]? {
         session.stopRunning()
         let out = lock.withLock { samples }
-        NSLog("mic stopped: %.2f s", Double(out.count) / Self.sampleRate)
-        return Double(out.count) / Self.sampleRate < Self.minSeconds ? nil : out
+        let seconds = Double(out.count) / Self.format.sampleRate
+        NSLog("mic stopped: %.2f s", seconds)
+        return seconds < Self.minSeconds ? nil : out
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sb: CMSampleBuffer, from connection: AVCaptureConnection) {

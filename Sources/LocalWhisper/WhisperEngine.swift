@@ -30,7 +30,7 @@ actor WhisperEngine {
         let window = 1600
         let peak = stride(from: 0, to: samples.count, by: window)
             .map { vDSP.rootMeanSquare(samples[$0..<min($0 + window, samples.count)]) }.max() ?? 0
-        NSLog("whisper rms=%.4f peak=%.4f", vDSP.rootMeanSquare(samples), peak)
+        NSLog("whisper peak=%.4f", peak)
         guard peak >= Self.silencePeak else { return "" }
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
         params.language = UnsafePointer(language)

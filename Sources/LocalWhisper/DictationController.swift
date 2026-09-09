@@ -105,7 +105,7 @@ final class DictationController {
         state = .transcribing
         Task {
             let t0 = Date()
-            let audioSeconds = Double(samples.count) / AudioRecorder.sampleRate
+            let audioSeconds = Double(samples.count) / AudioRecorder.format.sampleRate
             var text = await engine.transcribe(samples)
             let whisperMs = ms(since: t0)
             guard !text.isEmpty else { finish(); return }
