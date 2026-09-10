@@ -1,7 +1,7 @@
 # LocalWhisper
 
 Hold Left Option and speak, or tap it and speak hands-free. The text appears at your cursor, in any app.
-Speech recognition runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model, cleanup on the Apple Intelligence system language model (Apple's on-device Foundation Models default, about 3B parameters, not bundled). Everything runs on your Mac. Nothing leaves it.
+Recognition: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model. Cleanup: Apple's on-device Foundation Models, the Apple Intelligence system model of about 3B parameters, not bundled. Everything runs on your Mac. Nothing leaves it.
 
 ## Requirements
 
@@ -21,11 +21,14 @@ macOS asks for two permissions on first use: Microphone, and Accessibility, whic
 
 ## Use
 
-- Hold Left Option, speak, release. Pressing any other key while holding cancels, so Option shortcuts like `€` or `@` still work.
-- Tap Left Option instead of holding it for hands-free dictation. Tap again to finish; Esc or the ✕ in the pill discards. It stops by itself after two minutes without speech.
-- A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted.
-- The language is detected automatically. Dutch, English and Swedish are verified.
-- The menu has a microphone picker, a cleanup toggle, Launch at Login, the last transcript, and Quit. "Automatic" uses the built-in microphone; Bluetooth headsets work when picked but lose the first half second to their profile switch.
+Two ways, same result:
+
+- **Hold** Left Option, speak, release.
+- **Tap** Left Option, speak, tap again. Esc or the ✕ in the pill discards. It stops by itself after two minutes without speech.
+
+Any other key while holding cancels, so Option shortcuts like `€` or `@` still work. A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted. The language is detected automatically; Dutch, English and Swedish are verified.
+
+The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but lose the first half second to their profile switch), a cleanup toggle, Launch at Login, the last transcript, and Quit.
 
 Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-corrections such as "no wait". It never translates. Dictations under four words are inserted as is.
 
