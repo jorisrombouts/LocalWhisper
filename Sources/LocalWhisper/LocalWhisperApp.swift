@@ -31,8 +31,15 @@ struct LocalWhisperApp: App {
                 }
             }
             Divider()
-            if !controller.lastTranscript.isEmpty {
-                Text("Last: " + controller.lastTranscript.prefix(80))
+            if !controller.transcripts.isEmpty {
+                Section("Recent, click to copy") {
+                    ForEach(Array(controller.transcripts.enumerated()), id: \.offset) { _, t in
+                        Button(String(t.prefix(80))) {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(t, forType: .string)
+                        }
+                    }
+                }
                 Divider()
             }
             Button("Quit LocalWhisper") { _exit(0) } // plain exit() trips a ggml-metal atexit assert in v1.9.2

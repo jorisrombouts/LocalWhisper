@@ -32,7 +32,7 @@ Two ways, same result:
 
 Any other key while holding cancels, so Option shortcuts like `€` or `@` still work. A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted. The language is detected automatically; Dutch, English and Swedish are verified.
 
-The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but miss the first half second), a cleanup toggle, Launch at Login, the last transcript, and Quit.
+The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but miss the first half second), a cleanup toggle, Launch at Login, the last five transcripts (click one to copy it), and Quit.
 
 Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-corrections such as "no wait". It never translates. Dictations under four words are inserted as is.
 
@@ -56,7 +56,7 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Model (ggml-large-v3-turbo) | 1.5 GB |
 | whisper.cpp framework | 5.9 MB |
 | App icon | 1.2 MB |
-| App binary | 432 KB |
+| App binary | 437 KB |
 
 The Swift source is about 750 lines in 10 files.
 
@@ -78,4 +78,3 @@ A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/L
 
 - Core ML encoder: recognition about twice as fast, for 1.3 GB more disk space.
 - The pill reports a failed paste instead of "Inserted".
-- The last five transcripts in the menu instead of the last one; clicking one copies it.
