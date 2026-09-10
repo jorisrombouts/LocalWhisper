@@ -1,17 +1,22 @@
 import AppKit
 
-/// Hold Left Option to dictate. Any other key pressed during the hold cancels it,
-/// so Option-combos (€, @, accents) never trigger a dictation.
+/// Hold Left Option to dictate; a tap (under 0.3 s) is reported separately for hands-free mode.
+/// Any other key pressed during a hold cancels it, so Option-combos (€, @, accents) never trigger a dictation.
 @MainActor
 final class HotkeyMonitor {
     static let leftOptionKeyCode: UInt16 = 58
+    static let escapeKeyCode: UInt16 = 53
+    static let tapSeconds = 0.3
 
     var onPress: () -> Void = {}
     var onRelease: () -> Void = {}
     var onCancel: () -> Void = {}
+    var onTap: () -> Void = {}
+    var onEscape: () -> Void = {}
 
     private var isHeld = false
     private var cancelled = false
+    private var pressedAt = Date()
     private var monitors: [Any] = []
 
     static func ensureAccessibility(prompt: Bool) -> Bool {
@@ -32,15 +37,17 @@ final class HotkeyMonitor {
         case .flagsChanged where e.keyCode == Self.leftOptionKeyCode:
             let down = e.modifierFlags.contains(.option)
             if down, !isHeld {
-                isHeld = true; cancelled = false
+                isHeld = true; cancelled = false; pressedAt = Date()
                 onPress()
             } else if !down, isHeld {
                 isHeld = false
-                cancelled ? () : onRelease()
+                if !cancelled { Date().timeIntervalSince(pressedAt) < Self.tapSeconds ? onTap() : onRelease() }
             }
         case .keyDown where isHeld && !cancelled:
             cancelled = true
             onCancel()
+        case .keyDown where e.keyCode == Self.escapeKeyCode:
+            onEscape()
         default:
             break
         }

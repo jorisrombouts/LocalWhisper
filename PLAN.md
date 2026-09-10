@@ -72,6 +72,7 @@ Each step is runnable on its own; its check proves it before the next step.
 ### Step 3 — Hotkey (`HotkeyMonitor.swift`)
 - Global and local `NSEvent` monitors for `.flagsChanged` and `.keyDown`. Left Option is keyCode 58; pressed when `modifierFlags` contains `.option`.
 - Any `.keyDown` during the hold sets a cancelled flag; the release then fires `onCancel` instead of `onRelease`.
+- A release under 0.3 s fires `onTap`: hands-free mode. The controller keeps listening until the next Option press, ✓, Esc or ✕, or two minutes without voice as seen by the level meter. The pill shows ✕, bars, ✓ and is clickable; the panel still never activates.
 - Needs Accessibility. Modifier events arrive without it, so a working hotkey proves nothing about the paste.
 
 ### Step 4 — Insert (`TextInserter.swift`)
