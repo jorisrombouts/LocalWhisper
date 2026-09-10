@@ -15,6 +15,9 @@ final class DictationController {
 
     private(set) var state: State = .idle
     private(set) var level: Float = 0      // 0...1 for the meter, see onLevel below
+    private(set) var handsFree = false     // tapped instead of held: keeps listening until the next tap, Esc or ✕
+    private var swallowNextTap = false     // the release after the tap that finished a hands-free dictation
+    private var lastVoice = Date()
     private var smooth: Float = 0
     private var noiseFloor: Float = 0.01
     private var peakHold: Float = 0.01
@@ -51,10 +54,13 @@ final class DictationController {
             peakHold = max(smooth, peakHold * 0.995, noiseFloor * 6)
             let rel = max(0, smooth - noiseFloor * 2.5) / max(peakHold - noiseFloor * 2.5, 1e-4)
             level = max(rel, level * 0.93)                                     // ~0.3 s release
+            if rel > 0.3 { lastVoice = Date() } else if handsFree, Date().timeIntervalSince(lastVoice) > 120 { release() }
         } }
         hotkey.onPress = { [self] in press() }
         hotkey.onRelease = { [self] in release() }
         hotkey.onCancel = { [self] in cancel() }
+        hotkey.onTap = { [self] in tap() }
+        hotkey.onEscape = { [self] in if handsFree { cancel() } }
         hotkey.start()
         refreshPermissions(prompt: true)
 
@@ -82,6 +88,7 @@ final class DictationController {
     }
 
     private func press() {
+        if handsFree { release(); swallowNextTap = true; return }
         guard state == .idle || state == .done else { return }
         guard engine != nil else { show(.fallback("Model still loading")); return }
         do {
@@ -93,16 +100,26 @@ final class DictationController {
         }
     }
 
-    private func cancel() {
+    private func tap() {
+        if swallowNextTap { swallowNextTap = false; return }
+        guard state == .listening else { return }
+        handsFree = true
+        lastVoice = Date()
+    }
+
+    func cancel() {
         guard state == .listening else { return }
         _ = recorder.stop()
         finish()
     }
 
     private func release() {
+        if swallowNextTap { swallowNextTap = false; return }
         guard state == .listening, let engine else { return }
+        let mode = handsFree ? "handsfree" : "hold"
         guard let samples = recorder.stop() else { finish(); return }
         state = .transcribing
+        handsFree = false   // the ✕ belongs to listening only
         Task {
             let t0 = Date()
             let audioSeconds = Double(samples.count) / AudioRecorder.format.sampleRate
@@ -122,8 +139,8 @@ final class DictationController {
             let t2 = Date()
             TextInserter.insert(text)
             lastTranscript = text
-            NSLog("dictation audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
-                  audioSeconds, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
+            NSLog("dictation mode=%@ audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
+                  mode, audioSeconds, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
             state = fellBack ? .fallback("Raw text inserted") : .done
             try? await Task.sleep(for: .milliseconds(fellBack ? 1500 : 700))
             finish()
@@ -138,6 +155,7 @@ final class DictationController {
 
     private func finish() {
         state = .idle
+        handsFree = false
         level = 0
         overlay.hide()
     }
@@ -147,8 +165,9 @@ final class DictationController {
         let states: [(String, State)] = [("listening", .listening), ("transcribing", .transcribing), ("cleaning", .cleaning),
                                          ("done", .done), ("fallback", .fallback("Raw text inserted"))]
         level = 0.7
-        for (name, s) in states {
+        for (name, s) in states + [("listening-handsfree", .listening)] {
             state = s
+            handsFree = name.hasSuffix("handsfree")
             let r = ImageRenderer(content: OverlayView(controller: self).background(.blue.opacity(0.3)))
             r.scale = 2
             if let img = r.nsImage, let tiff = img.tiffRepresentation,

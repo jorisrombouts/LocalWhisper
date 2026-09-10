@@ -9,7 +9,7 @@ final class RecordingOverlay {
     init(controller: DictationController) {
         panel = NSPanel(contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless], backing: .buffered, defer: false)
         panel.level = .floating
-        panel.ignoresMouseEvents = true
+        panel.ignoresMouseEvents = false   // the hands-free ✕ is clickable; the panel still never activates
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -39,6 +39,9 @@ struct OverlayView: View {
         HStack(spacing: 10) {
             icon
             label
+            if controller.handsFree {
+                Image(systemName: "xmark.circle.fill").symbolRenderingMode(.hierarchical).foregroundStyle(.primary).onTapGesture { controller.cancel() }
+            }
         }
         .frame(height: 22)
         .padding(.horizontal, 16)
