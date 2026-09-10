@@ -9,7 +9,7 @@ final class RecordingOverlay {
     init(controller: DictationController) {
         panel = NSPanel(contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless], backing: .buffered, defer: false)
         panel.level = .floating
-        panel.ignoresMouseEvents = false   // the hands-free ✕ and ✓ are clickable; the panel still never activates
+        panel.ignoresMouseEvents = false   // the hands-free ✕ is clickable; the panel still never activates
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isOpaque = false
         panel.backgroundColor = .clear
@@ -38,7 +38,10 @@ struct OverlayView: View {
     var body: some View {
         HStack(spacing: 10) {
             icon
-            if !text.isEmpty { label }
+            label
+            if controller.handsFree {
+                Button { controller.cancel() } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }.buttonStyle(.plain)
+            }
         }
         .frame(height: 22)
         .padding(.horizontal, 16)
@@ -56,10 +59,6 @@ struct OverlayView: View {
 
     @ViewBuilder private var iconContent: some View {
         switch controller.state {
-        case .listening where controller.handsFree:
-            Button { controller.cancel() } label: { Image(systemName: "xmark.circle.fill").font(.title3) }.buttonStyle(.plain)
-            LevelBars(level: controller.level)
-            Button { controller.release() } label: { Image(systemName: "checkmark.circle.fill").font(.title3) }.buttonStyle(.plain)
         case .listening:
             Image(systemName: "mic.fill").foregroundStyle(.red)
             LevelBars(level: controller.level)
@@ -87,7 +86,7 @@ struct OverlayView: View {
     private var text: String {
         switch controller.state {
         case .idle: ""
-        case .listening: controller.handsFree ? "" : "Listening"
+        case .listening: "Listening"
         case .transcribing: "Transcribing"
         case .cleaning: "Cleaning up"
         case .done: "Inserted"

@@ -22,7 +22,7 @@ macOS asks for two permissions on first use: Microphone, and Accessibility, whic
 ## Use
 
 - Hold Left Option, speak, release. Pressing any other key while holding cancels, so Option shortcuts like `€` or `@` still work.
-- Tap Left Option instead of holding it for hands-free dictation. Tap again or click ✓ to finish, Esc or ✕ discards. It stops by itself after two minutes without speech.
+- Tap Left Option instead of holding it for hands-free dictation. Tap again to finish; Esc or the ✕ in the pill discards. It stops by itself after two minutes without speech.
 - A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted.
 - The language is detected automatically. Dutch, English and Swedish are verified.
 - The menu has a microphone picker, a cleanup toggle, Launch at Login, the last transcript, and Quit. "Automatic" uses the built-in microphone; Bluetooth headsets work when picked but lose the first half second to their profile switch.

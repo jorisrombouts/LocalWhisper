@@ -45,6 +45,7 @@ final class HotkeyMonitor {
             }
         case .keyDown where isHeld && !cancelled:
             cancelled = true
+            NSLog("hotkey: cancelled by key %d after %d ms", e.keyCode, Int(Date().timeIntervalSince(pressedAt) * 1000))
             onCancel()
         case .keyDown where e.keyCode == Self.escapeKeyCode:
             onEscape()
