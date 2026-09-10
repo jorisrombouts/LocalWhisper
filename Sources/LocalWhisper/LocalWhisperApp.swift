@@ -32,9 +32,9 @@ struct LocalWhisperApp: App {
             }
             Divider()
             if !controller.transcripts.isEmpty {
-                Section("Recent, click to copy") {
+                Menu("Copy Recent Transcript") {
                     ForEach(Array(controller.transcripts.enumerated()), id: \.offset) { _, t in
-                        Button(String(t.prefix(80))) {
+                        Button(t.count > 50 ? t.prefix(50) + "…" : t) {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(t, forType: .string)
                         }

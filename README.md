@@ -32,7 +32,7 @@ Two ways, same result:
 
 Any other key while holding cancels, so Option shortcuts like `€` or `@` still work. A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted. The language is detected automatically; Dutch, English and Swedish are verified.
 
-The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but miss the first half second), a cleanup toggle, Launch at Login, the last five transcripts (click one to copy it), and Quit.
+The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but miss the first half second), a cleanup toggle, Launch at Login, a Copy Recent Transcript submenu with the last five, and Quit.
 
 Cleanup fixes punctuation and capitalisation, removes fillers, and applies self-corrections such as "no wait". It never translates. Dictations under four words are inserted as is.
 

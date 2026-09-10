@@ -97,7 +97,7 @@ Each step is runnable on its own; its check proves it before the next step.
 - The panel gets a fixed 360×80 transparent frame; the SwiftUI capsule sizes itself to its content inside it and springs between states. Sizing the panel once to the first state's content clips every later state.
 - `ProgressView` does not render inside the panel; use SF Symbol effects (`variableColor` on `waveform`, `pulse` on `sparkles`).
 - Menu bar icon: monochrome SF Symbols only, `waveform` idle, `waveform.badge.mic` listening. macOS's orange dot already shows recording.
-- Menu: status, problem line with an "Open System Settings…" button, microphone picker, cleanup toggle, Launch at Login, the last five transcripts as copy buttons, Quit (`_exit`).
+- Menu: status, problem line with an "Open System Settings…" button, microphone picker, cleanup toggle, Launch at Login, a submenu with the last five transcripts as copy buttons, Quit (`_exit`).
 - Check: `LocalWhisper --overlay-demo <dir>` renders every state to PNG.
 
 ### Step 8 — Bundle, sign, install (`build-app.sh`)
