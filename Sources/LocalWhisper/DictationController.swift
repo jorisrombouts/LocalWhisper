@@ -15,7 +15,7 @@ final class DictationController {
 
     private(set) var state: State = .idle
     private(set) var level: Float = 0      // 0...1 for the meter, see onLevel below
-    private(set) var handsFree = false     // tapped instead of held: keeps listening until the next tap, ✓, Esc or ✕
+    private(set) var handsFree = false     // tapped instead of held: keeps listening until the next tap, Esc or ✕
     private var swallowNextTap = false     // the release after the tap that finished a hands-free dictation
     private var lastVoice = Date()
     private var smooth: Float = 0
@@ -113,7 +113,7 @@ final class DictationController {
         finish()
     }
 
-    func release() {
+    private func release() {
         if swallowNextTap { swallowNextTap = false; return }
         guard state == .listening, let engine else { return }
         let mode = handsFree ? "handsfree" : "hold"
