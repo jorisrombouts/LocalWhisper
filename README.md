@@ -52,9 +52,9 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Model (ggml-large-v3-turbo) | 1.5 GB |
 | whisper.cpp framework | 5.9 MB |
 | App icon | 1.2 MB |
-| App binary | 356 KB |
+| App binary | 432 KB |
 
-The Swift source is about 650 lines in 10 files.
+The Swift source is about 750 lines in 10 files.
 
 ## Privacy
 
