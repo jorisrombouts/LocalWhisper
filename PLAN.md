@@ -1,6 +1,6 @@
 # LocalWhisper — Implementation Plan
 
-Goal: hold a key, speak, release → cleaned text at the cursor. Single native Swift app, everything on-device, nothing leaves the Mac.
+Goal: hold or tap a key, speak → cleaned text at the cursor. Single native Swift app, everything on-device, nothing leaves the Mac.
 Following it from an empty folder reproduces the app in `main`.
 
 ## 0. Decisions
@@ -12,7 +12,7 @@ Following it from an empty folder reproduces the app in `main`.
 | STT | whisper.cpp prebuilt `whisper.xcframework` (v1.9.2, GitHub release asset), Metal, no CoreML |
 | Model | `ggml-large-v3-turbo.bin`, language auto-detect, bundled in the app |
 | Cleanup | Apple `FoundationModels` on-device, on by default, menu toggle, timeout 1.5 s + 50 ms per second of audio → raw fallback, skipped under 4 words |
-| Hotkey | Hold Left Option; any other key during the hold cancels |
+| Hotkey | Hold Left Option (push-to-talk) or tap it (hands-free until the next tap, Esc, ✕ or two minutes without voice); any other key during a hold cancels |
 | Insert | `NSPasteboard` + `CGEvent` ⌘V, previous clipboard restored after 0.3 s |
 | Signing | Self-signed "LocalWhisper Dev" certificate, App Sandbox off (global key monitor and CGEvent posting need it) |
 | Targets | macOS 26+, Apple Silicon |
