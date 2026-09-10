@@ -74,6 +74,6 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 
 A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the model and the whisper.cpp framework. `./check.sh` is the smoke test. The rules for changing the code are in `AGENTS.md`.
 
-## Not yet
+## Roadmap
 
 - Core ML encoder: recognition about twice as fast, for 1.3 GB more disk space.

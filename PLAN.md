@@ -129,6 +129,6 @@ Recognition from 0.9 s to about 0.4 s by running whisper's encoder on the Neural
 
 Cost: 1.3 GB more on disk and in memory, and a few minutes of compile once per Mac.
 
-## 6. Not in v1
+## 6. Roadmap
 
-See "Not yet" in `README.md`.
+See "Roadmap" in `README.md`.
