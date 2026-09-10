@@ -40,7 +40,7 @@ struct OverlayView: View {
             icon
             label
             if controller.handsFree {
-                Button { controller.cancel() } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary).onTapGesture { controller.cancel() }
             }
         }
         .frame(height: 22)
