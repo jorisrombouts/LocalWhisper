@@ -32,7 +32,7 @@ struct LocalWhisperApp: App {
             }
             Divider()
             if !controller.transcripts.isEmpty {
-                Menu("Recent Transcriptions") {
+                Menu("Recent transcriptions") {
                     ForEach(Array(controller.transcripts.enumerated()), id: \.offset) { _, t in
                         Button(t.count > 50 ? t.prefix(50) + "…" : t) {
                             NSPasteboard.general.clearContents()
