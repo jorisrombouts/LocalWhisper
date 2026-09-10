@@ -1,7 +1,11 @@
 # LocalWhisper
 
 Hold Left Option and speak, or tap it and speak hands-free. The text appears at your cursor, in any app.
-Recognition: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model. Cleanup: Apple's on-device Foundation Models, the Apple Intelligence system model of about 3B parameters, not bundled. Everything runs on your Mac. Nothing leaves it.
+
+- Recognition: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model.
+- Cleanup: Apple's on-device Foundation Models, the Apple Intelligence system model of about 3B parameters, not bundled.
+
+Everything runs on your Mac. Nothing leaves it.
 
 ## Requirements
 
