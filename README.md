@@ -77,3 +77,5 @@ A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/L
 ## Roadmap
 
 - Core ML encoder: recognition about twice as fast, for 1.3 GB more disk space.
+- The pill reports a failed paste instead of "Inserted".
+- The last five transcripts in the menu instead of the last one.
