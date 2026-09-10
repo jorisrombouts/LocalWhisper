@@ -119,6 +119,7 @@ final class DictationController {
         let mode = handsFree ? "handsfree" : "hold"
         guard let samples = recorder.stop() else { finish(); return }
         state = .transcribing
+        handsFree = false   // the ✕ belongs to listening only
         Task {
             let t0 = Date()
             let audioSeconds = Double(samples.count) / AudioRecorder.format.sampleRate
