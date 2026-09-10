@@ -5,7 +5,6 @@ import whisper
 /// Thin wrapper over whisper.h. Actor because a whisper_context is not thread-safe.
 actor WhisperEngine {
     private let ctx: OpaquePointer
-    private let language = strdup("auto")! // lives as long as the process
 
     init(modelPath: String) throws {
         var cparams = whisper_context_default_params()
@@ -33,14 +32,9 @@ actor WhisperEngine {
         NSLog("whisper peak=%.4f", peak)
         guard peak >= Self.silencePeak else { return "" }
         var params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
-        params.language = UnsafePointer(language)
+        params.language = nil        // auto-detect
         params.n_threads = 4
         params.no_timestamps = true
-        params.single_segment = false
-        params.print_special = false
-        params.print_progress = false
-        params.print_realtime = false
-        params.print_timestamps = false
         params.suppress_blank = true
         params.suppress_nst = true
 

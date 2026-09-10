@@ -56,7 +56,7 @@ LocalWhisper/
 Each step is runnable on its own; its check proves it before the next step.
 
 ### Step 1 — Engine wrapper (`WhisperEngine.swift`)
-- `whisper_init_from_file_with_params` with `use_gpu` and `flash_attn`; `whisper_full` with greedy sampling, `language = "auto"`, `no_timestamps`, 4 threads, all printing off.
+- `whisper_init_from_file_with_params` with `use_gpu` and `flash_attn`; `whisper_full` with greedy sampling, `language = nil` (auto-detect), `no_timestamps`, 4 threads, blank and non-speech tokens suppressed.
 - Drop segments with `no_speech_prob >= 0.6` and any output without letters or digits: whisper invents sentences on silence.
 - `warmUp()` transcribes 1 s of silence at launch.
 - Check: `LocalWhisper --transcribe clip.wav` on a `say`-generated English and Dutch clip. Done when a 6 s clip transcribes in about 0.9 s.

@@ -30,7 +30,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSMicrophoneUsageDescription</key><string>LocalWhisper records your voice while you hold the hotkey and transcribes it on this Mac.</string>
+  <key>NSMicrophoneUsageDescription</key><string>LocalWhisper records your voice while you dictate and transcribes it on this Mac.</string>
 </dict></plist>
 PLIST
 

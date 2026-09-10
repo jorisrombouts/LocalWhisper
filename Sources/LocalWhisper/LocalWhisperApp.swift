@@ -45,7 +45,7 @@ struct LocalWhisperApp: App {
 
     private var status: String {
         switch controller.state {
-        case .idle: "Idle — hold Left Option to dictate"
+        case .idle: "Idle — hold or tap Left Option to dictate"
         case .listening: "Recording…"
         case .transcribing, .cleaning: "Working…"
         case .done: "Inserted"
