@@ -21,7 +21,7 @@ final class DictationController {
     private var smooth: Float = 0
     private var noiseFloor: Float = 0.01
     private var peakHold: Float = 0.01
-    private(set) var transcripts: [String] = []   // newest first, at most five
+    private(set) var transcripts: [String] = []
     private(set) var problem: String?          // shown in the menu
     private var engineProblem: String?
     private(set) var cleanupUnavailable: String? = Cleaner.unavailableReason
