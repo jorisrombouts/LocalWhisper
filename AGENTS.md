@@ -2,6 +2,10 @@
 
 What it is, how to install and use it: `README.md`. This file is what keeps a change from breaking the app.
 
+## Docs
+
+- Every change updates `README.md`, `PLAN.md` and this file in the same commit, by rewriting the sentence that is now wrong. Replace and delete before adding; no history, no changelog, no rationale a user does not need. The README's size and speed figures are measurements (`wc -l Sources/LocalWhisper/*.swift`, `du -sh` on the installed binary, the log); re-measure when code changes.
+
 ## Build and test
 
 - `./build-app.sh` fetches deps, builds release, signs, and restarts `build/LocalWhisper.app`. `./build-app.sh install` refreshes `/Applications/LocalWhisper.app`, the login item. Never replace a bundle under a running app: macOS silently drops its permissions. Never run both copies at once.
