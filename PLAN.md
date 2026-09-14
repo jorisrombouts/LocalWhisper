@@ -89,8 +89,8 @@ Each step is runnable on its own; its check proves it before the next step.
 ### Step 6 — Cleanup (`Cleaner.swift`)
 - A fresh `LanguageModelSession` prewarmed whenever recording starts: macOS evicts the model after idle and a cold call takes over 2 s. Instructions: output only the edited transcript; keep the language; fix punctuation and casing; remove fillers; apply self-corrections. Four examples, two of them Dutch, as prompt and response turns in the session `Transcript`; a label such as "Edited:" in the instructions gets echoed into the output.
 - Race `respond` against `Task.sleep` in a task group; nil on timeout, error or empty output means the raw text is inserted.
-- Check: `LocalWhisper --clean "raw text"` on English, Dutch and Swedish input. Done when fillers disappear and the language never changes.
-- Without an explicit "keep the language" rule the model translates Dutch to English.
+- Check: `LocalWhisper --clean "raw text"` on English, Dutch and Swedish input and a factual question. Done when fillers disappear, the language never changes, and a question is punctuated rather than answered.
+- Without an explicit "keep the language" rule the model translates Dutch to English; without a "never answer" rule and a question example it answers a dictated question.
 
 ### Step 7 — Feedback (`RecordingOverlay.swift`, menu bar)
 - `NSPanel` with `.nonactivatingPanel`, `.borderless`, floating, ignores mouse, joins all Spaces, transparent, shown with `orderFrontRegardless` only.

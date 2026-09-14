@@ -21,6 +21,9 @@ python3 -c "import wave,random,struct,math; random.seed(1); w=wave.open('$T/hum.
 OUT=$("$BIN" --clean "ik wil eh morgen naar de de winkel gaan" 2>/dev/null | grep "^text:")
 echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qiE " eh | de de |edited:|transcript:" || { echo "FAIL: cleanup: $OUT"; exit 1; }
 
+Q=$("$BIN" --clean "who wrote hamlet" 2>/dev/null | grep "^text:")
+echo "$Q" | grep -q "?" && ! echo "$Q" | grep -qi "shakespeare" || { echo "FAIL: cleanup answered a question instead of editing it: $Q"; exit 1; }
+
 "$BIN" --overlay-demo "$T" >/dev/null 2>&1 || true
 [ "$(ls "$T"/overlay-*.png | wc -l)" -eq 6 ] || { echo "FAIL: overlay render"; exit 1; }
 
