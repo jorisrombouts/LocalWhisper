@@ -77,7 +77,7 @@ final class DictationController {
                 await MainActor.run { engineProblem = error.localizedDescription; refreshPermissions(prompt: false) }
             }
         }
-        if cleanupUnavailable == nil { Task { await cleaner.warmUp() } }
+        if cleanupUnavailable == nil { cleaner.warmUp() }
     }
 
     func refreshPermissions(prompt: Bool) {

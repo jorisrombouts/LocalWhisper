@@ -19,7 +19,7 @@ python3 -c "import wave,random,struct,math; random.seed(1); w=wave.open('$T/hum.
 [ "$("$BIN" --transcribe "$T/hum.wav" 2>/dev/null | grep "^text:")" = "text: " ] || { echo "FAIL: short hum should not become 'Thank you.'"; exit 1; }
 
 OUT=$("$BIN" --clean "ik wil eh morgen naar de de winkel gaan" 2>/dev/null | grep "^text:")
-echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qE " eh | de de " || { echo "FAIL: cleanup: $OUT"; exit 1; }
+echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qiE " eh | de de |edited:|transcript:" || { echo "FAIL: cleanup: $OUT"; exit 1; }
 
 "$BIN" --overlay-demo "$T" >/dev/null 2>&1 || true
 [ "$(ls "$T"/overlay-*.png | wc -l)" -eq 6 ] || { echo "FAIL: overlay render"; exit 1; }
