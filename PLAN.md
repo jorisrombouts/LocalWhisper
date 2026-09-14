@@ -57,9 +57,9 @@ Each step is runnable on its own; its check proves it before the next step.
 
 ### Step 1 — Engine wrapper (`WhisperEngine.swift`)
 - `whisper_init_from_file_with_params` with `use_gpu` and `flash_attn`; `whisper_full` with greedy sampling, `language = nil` (auto-detect), `no_timestamps`, 4 threads, blank and non-speech tokens suppressed.
-- Drop segments with `no_speech_prob >= 0.6` and any output without letters or digits: whisper invents sentences on silence.
+- Drop segments with `no_speech_prob >= 0.6`, any output without letters or digits, and the phrases whisper says to a short faint clip ("you", "Thank you."), which arrive with `no_speech_prob` at 0.00.
 - `warmUp()` transcribes 1 s of silence at launch.
-- Check: `LocalWhisper --transcribe clip.wav` on a `say`-generated English and Dutch clip. Done when a 6 s clip transcribes in about 0.9 s.
+- Check: `LocalWhisper --transcribe clip.wav` on a `say`-generated English and Dutch clip, faint noise and a short hum. Done when a 6 s clip transcribes in about 0.9 s and the noise clips give nothing.
 - A top-level `Task {}` in `main.swift` is main-actor isolated; blocking main with a semaphore deadlocks. Use `Task.detached` or `RunLoop.main.run()`. Exit harnesses with `_exit` after `fflush`; ggml-metal asserts in its `atexit` handler.
 
 ### Step 2 — Audio capture (`AudioRecorder.swift`)
@@ -87,7 +87,7 @@ Each step is runnable on its own; its check proves it before the next step.
 - Done when: hold, talk, release, text appears in any app. **Usable MVP.**
 
 ### Step 6 — Cleanup (`Cleaner.swift`)
-- One `LanguageModelSession` created at launch and warmed. Instructions: output only the edited transcript; keep the language; fix punctuation and casing; remove fillers; apply self-corrections. Few-shot examples, two of them Dutch.
+- One `LanguageModelSession` created at launch and prewarmed again whenever recording starts: macOS evicts the model after idle and a cold call takes over 2 s. Instructions: output only the edited transcript; keep the language; fix punctuation and casing; remove fillers; apply self-corrections. Few-shot examples, two of them Dutch.
 - Race `respond` against `Task.sleep` in a task group; nil on timeout, error or empty output means the raw text is inserted.
 - Check: `LocalWhisper --clean "raw text"` on English, Dutch and Swedish input. Done when fillers disappear and the language never changes.
 - Without an explicit "keep the language" rule the model translates Dutch to English.

@@ -36,9 +36,8 @@ final class Cleaner {
         }
     }
 
-    func warmUp() async {
-        _ = try? await session.respond(to: "Transcript: hello there how are you", options: GenerationOptions(temperature: 0))
-    }
+    /// Loads the model into memory; macOS evicts it after idle and a cold call takes over 2 s.
+    func warmUp() { session.prewarm() }
 
     /// Cleaned text, or nil on timeout, error or empty output.
     /// Measured: about 0.5 s plus 30 ms per second of audio, so the timeout scales with the clip.

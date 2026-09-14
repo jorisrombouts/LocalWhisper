@@ -93,6 +93,7 @@ final class DictationController {
         guard engine != nil else { show(.fallback("Model still loading")); return }
         do {
             try recorder.start()
+            if Settings.cleanupEnabled, cleanupUnavailable == nil { cleaner.warmUp() }
             state = .listening
             overlay.show()
         } catch {

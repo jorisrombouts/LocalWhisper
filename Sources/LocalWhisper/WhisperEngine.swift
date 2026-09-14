@@ -51,7 +51,10 @@ actor WhisperEngine {
         }
         text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         // Punctuation-only output (e.g. ".") is silence, not speech.
-        return text.contains(where: { $0.isLetter || $0.isNumber }) ? text : ""
+        guard text.contains(where: { $0.isLetter || $0.isNumber }) else { return "" }
+        // What whisper says to a short faint clip, with no_speech_prob at 0.00; a real "thank you" is the price.
+        let words = text.lowercased().filter { $0.isLetter || $0 == " " }
+        return ["you", "thank you", "thanks for watching"].contains(words) ? "" : text
     }
 
     func warmUp() {

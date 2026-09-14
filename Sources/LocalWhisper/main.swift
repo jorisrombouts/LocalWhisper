@@ -9,7 +9,8 @@ if let raw = arg(after: "--clean") {
     if let r = Cleaner.unavailableReason { print(r); exit(1) }
     let cleaner = Cleaner()
     Task { @MainActor in
-        await cleaner.warmUp()
+        cleaner.warmUp()
+        try? await Task.sleep(for: .seconds(2))
         let t0 = Date()
         let out = await cleaner.clean(raw, audioSeconds: Double(raw.count) / 15)   // ~15 chars per second of speech
         print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", out != nil)
