@@ -70,7 +70,6 @@ final class DictationController {
             let t0 = Date()
             do {
                 let e = try WhisperEngine(modelPath: url.path, vadPath: vad)
-                await e.warmUp()
                 await MainActor.run { engine = e }
                 NSLog("engine ready in %d ms", Int(Date().timeIntervalSince(t0) * 1000))
             } catch {

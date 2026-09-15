@@ -58,8 +58,7 @@ Each step is runnable on its own; its check proves it before the next step.
 
 ### Step 1 — Engine wrapper (`WhisperEngine.swift`)
 - `whisper_init_from_file_with_params` with `use_gpu` and `flash_attn`; `whisper_full` with greedy sampling, `language = nil` (auto-detect), `no_timestamps`, 4 threads, blank and non-speech tokens suppressed.
-- Set `vad`, `vad_model_path` and `whisper_vad_default_params()`: Silero decides what is speech, and whisper decodes only that. Without it whisper answers non-speech audio with invented sentences, at a normal word rate and with `no_speech_prob` at 0.00, so neither a duration, a loudness nor a confidence threshold separates them. Drop output without letters or digits.
-- `warmUp()` transcribes 1 s of silence at launch.
+- Set `vad`, `vad_model_path` and `whisper_vad_default_params()`: Silero decides what is speech, and whisper decodes only that. Without it whisper answers non-speech audio with invented sentences, at a normal word rate and with `no_speech_prob` at 0.00, so neither a duration, a loudness nor a confidence threshold separates them. Drop output without letters or digits. VAD is the only guard, so log it when the model is absent.
 - Check: `LocalWhisper --transcribe clip.wav` on a `say`-generated English and Dutch clip, faint noise, a short hum and a spoken "thank you". Done when a 6 s clip transcribes in about 0.9 s, the noise clips give nothing, and the spoken phrase survives.
 - A top-level `Task {}` in `main.swift` is main-actor isolated; blocking main with a semaphore deadlocks. Use `Task.detached` or `RunLoop.main.run()`. Exit harnesses with `_exit` after `fflush`; ggml-metal asserts in its `atexit` handler.
 

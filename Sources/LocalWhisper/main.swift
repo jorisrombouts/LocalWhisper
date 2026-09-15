@@ -10,7 +10,7 @@ if let raw = arg(after: "--clean") {
     let cleaner = Cleaner()
     Task { @MainActor in
         cleaner.warmUp()
-        try? await Task.sleep(for: .seconds(2))
+        try? await Task.sleep(for: .seconds(2))   // let the model load, or the timeout fires and the check is flaky
         let t0 = Date()
         let out = await cleaner.clean(raw, audioSeconds: Double(raw.count) / 15)   // ~15 chars per second of speech
         print("clean_ms", Int(Date().timeIntervalSince(t0) * 1000), "cleaned", out != nil)
@@ -29,7 +29,6 @@ if let path = arg(after: "--transcribe") {
     let samples = try loadSamples16k(URL(fileURLWithPath: path))
     print("audio_s", Double(samples.count) / 16_000)
     Task {
-        await engine.warmUp()
         let t1 = Date()
         let text = await engine.transcribe(samples)
         print("whisper_ms", Int(Date().timeIntervalSince(t1) * 1000))

@@ -20,6 +20,8 @@ actor WhisperEngine {
         }
         self.ctx = ctx
         self.vadPath = vadPath.map { strdup($0) }   // outlives every whisper_full call
+        // Nothing else stands between non-speech audio and an invented sentence.
+        if vadPath == nil { NSLog("no VAD model (%@.bin): non-speech audio may transcribe as invented text", Self.vadModel) }
     }
 
     // Engine lives for the process lifetime; no deinit needed.
@@ -55,9 +57,5 @@ actor WhisperEngine {
         text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         // Punctuation-only output (e.g. ".") is silence, not speech.
         return text.contains(where: { $0.isLetter || $0.isNumber }) ? text : ""
-    }
-
-    func warmUp() {
-        _ = transcribe([Float](repeating: 0, count: 16_000))
     }
 }

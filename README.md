@@ -20,7 +20,7 @@ git clone https://github.com/jorisrombouts/LocalWhisper.git && cd LocalWhisper
 ./build-app.sh install
 ```
 
-The first build downloads the 1.6 GB model. The app is installed in `/Applications` and appears in the menu bar as a waveform.
+The first build downloads the models, 1.6 GB in all. The app is installed in `/Applications` and appears in the menu bar as a waveform.
 macOS asks for two permissions on first use: Microphone, and Accessibility, which is what lets the app paste at your cursor.
 
 ## Use
@@ -59,11 +59,11 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Silero VAD model | 868 KB |
 | App binary | 444 KB |
 
-The Swift source is about 770 lines in 10 files.
+The Swift source is about 765 lines in 10 files.
 
 ## Privacy
 
-No network calls. The model and Apple Intelligence run on-device. Your clipboard is restored after the paste.
+No network calls. The models and Apple Intelligence run on-device. Your clipboard is restored after the paste.
 
 ## Troubleshooting
 
@@ -73,7 +73,7 @@ No network calls. The model and Apple Intelligence run on-device. Your clipboard
 
 ## Development
 
-A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the model and the whisper.cpp framework. `./check.sh` is the smoke test. The rules for changing the code are in `AGENTS.md`.
+A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/LocalWhisper.app`; `./fetch-deps.sh` gets the models and the whisper.cpp framework. `./check.sh` is the smoke test. The rules for changing the code are in `AGENTS.md`.
 
 ## Roadmap
 
