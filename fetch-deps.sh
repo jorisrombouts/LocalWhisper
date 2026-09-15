@@ -4,7 +4,7 @@ set -eu
 cd "$(dirname "$0")"
 WHISPER=v1.9.2
 MODEL=Resources/ggml-large-v3-turbo.bin
-VAD=Resources/ggml-silero-v5.1.2.bin
+VAD=Resources/ggml-silero-v6.2.0.bin
 
 if [ ! -f "$MODEL" ]; then
   echo "downloading model (1.6 GB)"

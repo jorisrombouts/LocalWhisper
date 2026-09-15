@@ -13,7 +13,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Framewor
 cp .build/release/LocalWhisper "$APP/Contents/MacOS/"
 cp -R Frameworks/whisper.xcframework/macos-arm64_x86_64/whisper.framework "$APP/Contents/Frameworks/"
 cp -c Resources/ggml-large-v3-turbo.bin "$APP/Contents/Resources/"   # APFS clone, instant
-cp Resources/ggml-silero-v5.1.2.bin "$APP/Contents/Resources/"
+cp Resources/ggml-silero-v6.2.0.bin "$APP/Contents/Resources/"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/LocalWhisper"
 

@@ -7,8 +7,8 @@ actor WhisperEngine {
     private let ctx: OpaquePointer
     private let vadPath: UnsafeMutablePointer<CChar>?
 
-    /// Silero VAD, the version whisper.cpp v1.9.2 ships support for (`models/download-vad-model.sh`).
-    static let vadModel = "ggml-silero-v5.1.2"
+    /// Silero VAD, the version whisper.cpp v1.9.2 ships support for (`models/download-vad-model.sh silero-v6.2.0`).
+    static let vadModel = "ggml-silero-v6.2.0"
 
     init(modelPath: String, vadPath: String?) throws {
         var cparams = whisper_context_default_params()
