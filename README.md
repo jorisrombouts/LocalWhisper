@@ -2,7 +2,7 @@
 
 Hold Left Option and speak, or tap it and speak hands-free. The text appears at your cursor, in any app.
 
-- Recognition: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model.
+- Recognition: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) with the large-v3-turbo model, gated by Silero voice activity detection so silence is never transcribed.
 - Cleanup: Apple's on-device Foundation Models, the Apple Intelligence system model of about 3B parameters, not bundled.
 
 Everything runs on your Mac. Nothing leaves it.
@@ -56,9 +56,10 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Model (ggml-large-v3-turbo) | 1.5 GB |
 | whisper.cpp framework | 5.9 MB |
 | App icon | 1.2 MB |
-| App binary | 437 KB |
+| Silero VAD model | 868 KB |
+| App binary | 444 KB |
 
-The Swift source is about 750 lines in 10 files.
+The Swift source is about 770 lines in 10 files.
 
 ## Privacy
 

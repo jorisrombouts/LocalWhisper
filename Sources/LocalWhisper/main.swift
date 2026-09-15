@@ -23,7 +23,8 @@ if let raw = arg(after: "--clean") {
 // Engine check: `LocalWhisper --transcribe file.wav`
 if let path = arg(after: "--transcribe") {
     let t0 = Date()
-    let engine = try WhisperEngine(modelPath: DictationController.modelURL()!.path)
+    let engine = try WhisperEngine(modelPath: DictationController.modelURL()!.path,
+                                   vadPath: DictationController.modelURL(WhisperEngine.vadModel)?.path)
     print("load_ms", Int(Date().timeIntervalSince(t0) * 1000))
     let samples = try loadSamples16k(URL(fileURLWithPath: path))
     print("audio_s", Double(samples.count) / 16_000)

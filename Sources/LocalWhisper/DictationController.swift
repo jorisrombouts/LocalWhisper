@@ -33,11 +33,11 @@ final class DictationController {
     private var started = false
     @ObservationIgnored private lazy var overlay = RecordingOverlay(controller: self)
 
-    static func modelURL() -> URL? {
-        if let u = Bundle.main.url(forResource: "ggml-large-v3-turbo", withExtension: "bin") { return u }
+    static func modelURL(_ name: String = "ggml-large-v3-turbo") -> URL? {
+        if let u = Bundle.main.url(forResource: name, withExtension: "bin") { return u }
         let dev = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Resources/ggml-large-v3-turbo.bin")
+            .appendingPathComponent("Resources/\(name).bin")
         return FileManager.default.fileExists(atPath: dev.path) ? dev : nil
     }
 
@@ -65,10 +65,11 @@ final class DictationController {
         refreshPermissions(prompt: true)
 
         guard let url = Self.modelURL() else { engineProblem = "Model file ggml-large-v3-turbo.bin not found"; refreshPermissions(prompt: false); return }
+        let vad = Self.modelURL(WhisperEngine.vadModel)?.path
         Task.detached { [self] in
             let t0 = Date()
             do {
-                let e = try WhisperEngine(modelPath: url.path)
+                let e = try WhisperEngine(modelPath: url.path, vadPath: vad)
                 await e.warmUp()
                 await MainActor.run { engine = e }
                 NSLog("engine ready in %d ms", Int(Date().timeIntervalSince(t0) * 1000))

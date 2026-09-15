@@ -16,7 +16,10 @@ python3 -c "import wave,random,struct,math; random.seed(1); w=wave.open('$T/hum.
 "$BIN" --transcribe "$T/en.wav" 2>/dev/null | grep -i "test of local whisper" || { echo "FAIL: english transcription"; exit 1; }
 "$BIN" --transcribe "$T/nl.wav" 2>/dev/null | grep -i "spraakherkenning" || { echo "FAIL: dutch transcription"; exit 1; }
 [ "$("$BIN" --transcribe "$T/noise.wav" 2>/dev/null | grep "^text:")" = "text: " ] || { echo "FAIL: faint noise should transcribe to nothing"; exit 1; }
-[ "$("$BIN" --transcribe "$T/hum.wav" 2>/dev/null | grep "^text:")" = "text: " ] || { echo "FAIL: short hum should not become 'Thank you.'"; exit 1; }
+[ "$("$BIN" --transcribe "$T/hum.wav" 2>/dev/null | grep "^text:")" = "text: " ] || { echo "FAIL: VAD should hear no speech in a short hum"; exit 1; }
+say -v Samantha -o "$T/ty.aiff" "Thank you."
+afconvert -f WAVE -d LEI16@16000 -c 1 "$T/ty.aiff" "$T/ty.wav"
+"$BIN" --transcribe "$T/ty.wav" 2>/dev/null | grep -i "thank you" || { echo "FAIL: a spoken 'thank you' must survive; only non-speech is dropped"; exit 1; }
 
 OUT=$("$BIN" --clean "ik wil eh morgen naar de de winkel gaan" 2>/dev/null | grep "^text:")
 echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qiE " eh | de de |edited:|transcript:" || { echo "FAIL: cleanup: $OUT"; exit 1; }

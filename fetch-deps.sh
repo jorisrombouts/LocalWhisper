@@ -4,6 +4,7 @@ set -eu
 cd "$(dirname "$0")"
 WHISPER=v1.9.2
 MODEL=Resources/ggml-large-v3-turbo.bin
+VAD=Resources/ggml-silero-v5.1.2.bin
 
 if [ ! -f "$MODEL" ]; then
   echo "downloading model (1.6 GB)"
@@ -12,6 +13,15 @@ fi
 # A few-KB "model" is an HTML block page from a filtering proxy, not a model.
 if [ "$(stat -f %z "$MODEL")" -lt 1000000000 ]; then
   rm -f "$MODEL"; echo "model download failed: huggingface.co unreachable or blocked"; exit 1
+fi
+
+# Silero VAD: whisper only decodes what this hears speech in, so silence cannot hallucinate.
+if [ ! -f "$VAD" ]; then
+  echo "downloading Silero VAD model (865 KB)"
+  curl -L --progress-bar -o "$VAD" "https://huggingface.co/ggml-org/whisper-vad/resolve/main/$(basename "$VAD")"
+fi
+if [ "$(stat -f %z "$VAD")" -lt 500000 ]; then
+  rm -f "$VAD"; echo "VAD download failed: huggingface.co unreachable or blocked"; exit 1
 fi
 
 if [ ! -d Frameworks/whisper.xcframework ]; then
