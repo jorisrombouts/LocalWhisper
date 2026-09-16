@@ -13,7 +13,7 @@ Following it from an empty folder reproduces the app in `main`.
 | Model | `ggml-large-v3-turbo.bin`, language auto-detect, bundled in the app |
 | Cleanup | Apple `FoundationModels` on-device, on by default, menu toggle, timeout 1.5 s + 50 ms per second of audio → raw fallback, skipped under 4 words |
 | Hotkey | Hold Left Option (push-to-talk) or tap it (hands-free until the next tap, Esc, ✕ or two minutes without voice); any other key during a hold cancels |
-| Insert | `NSPasteboard` + `CGEvent` ⌘V, previous clipboard restored after 0.3 s |
+| Insert | `NSPasteboard` + `CGEvent` ⌘V, previous clipboard restored after 0.3 s, the pill naming any reason it could not be posted |
 | Signing | Self-signed "LocalWhisper Dev" certificate, App Sandbox off (global key monitor and CGEvent posting need it) |
 | Targets | macOS 26+, Apple Silicon |
 
@@ -78,7 +78,7 @@ Each step is runnable on its own; its check proves it before the next step.
 ### Step 4 — Insert (`TextInserter.swift`)
 - Save the pasteboard string, set the text, post ⌘V key down and up via `CGEvent` on the HID tap, restore after 0.3 s.
 - Log `ax_trusted`, `post_event_ok`, `pasteboard_wrote` on every insert; the line separates a permission problem from a code problem. Return nil when ⌘V was posted and the reason otherwise, which the controller shows in the pill; whether the app accepted the paste is not observable, so only the permission and API failures are reported.
-- Check: `LocalWhisper --insert-test` pastes a fixed string into the frontmost app.
+- Check: `LocalWhisper --insert-test` pastes a fixed string into the frontmost app and prints the outcome.
 
 ### Step 5 — Wire the loop (`DictationController.swift`, `LocalWhisperApp.swift`)
 - Press → recorder start; cancel → discard; release → transcribe → insert. Log `whisper_ms`, `clean_ms`, `insert_ms` per dictation.
