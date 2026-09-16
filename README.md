@@ -59,7 +59,7 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Silero VAD model | 868 KB |
 | App binary | 444 KB |
 
-The Swift source is about 765 lines in 10 files.
+The Swift source is about 770 lines in 10 files.
 
 ## Privacy
 

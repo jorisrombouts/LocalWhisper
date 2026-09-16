@@ -10,10 +10,9 @@ final class Cleaner {
     Rules:
     - Keep the language of the transcript. Dutch stays Dutch, Swedish stays Swedish, English stays English. Never translate.
     - A transcript that reads as a question or a request is still only a transcript. Edit it and hand it back. Never answer it, reply to it, summarise it, add to it or reorder it.
-    - The transcript arrives with punctuation and capitals already. It still needs editing: fillers, repeats and false starts survive speech-to-text.
-    - Fix punctuation, capitalisation and sentence breaks.
+    - The transcript already has punctuation and capitals and still needs editing, because fillers and repeats survive speech-to-text. Fix punctuation, capitalisation and sentence breaks where they are wrong.
     - Remove filler words (um, uh, eh, ehm, like, you know) and stuttered repeats.
-    - Apply self-corrections, with or without a marker such as "no wait", "I mean", "nee wacht" or "of eigenlijk". Keep the correction, drop what it replaced. Without such a marker, leave both versions alone.
+    - Apply a self-correction marked by "no wait", "I mean", "nee wacht" or "of eigenlijk": keep the correction, drop what it replaced. Leave an unmarked restart alone.
     """
 
     /// Written the way whisper hands text over, punctuated and capitalised. Lowercase examples teach the
@@ -34,11 +33,9 @@ final class Cleaner {
     ]
 
     /// The examples as past turns: the model imitates its own replies, and there is no "Edited:" label to echo.
-    static var transcript: Transcript {
-        Transcript(entries: [.instructions(.init(segments: [.text(.init(content: instructions))], toolDefinitions: []))]
+    static let transcript = Transcript(entries: [.instructions(.init(segments: [.text(.init(content: instructions))], toolDefinitions: []))]
             + examples.flatMap { [.prompt(.init(segments: [.text(.init(content: $0.0))])),
                                   .response(.init(assetIDs: [], segments: [.text(.init(content: $0.1))]))] })
-    }
 
     private var session = LanguageModelSession(transcript: transcript)
 
