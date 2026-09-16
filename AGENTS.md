@@ -16,7 +16,7 @@ What it is, how to install and use it: `README.md`. This file is what keeps a ch
 
 ## Permissions
 
-- "Inserted" but no paste is Accessibility, not code. `ax_trusted=0` in the log with the app enabled in System Settings means a stale entry: `tccutil reset Accessibility nl.joris.localwhisper`, relaunch, grant again. A binary started from a shell inherits the terminal's grants; only `open` tests the app's own.
+- A paste that does not land is Accessibility, not code: `TextInserter.insert` returns the reason and the pill shows it instead of "Inserted". `ax_trusted=0` in the log with the app enabled in System Settings means a stale entry: `tccutil reset Accessibility nl.joris.localwhisper`, relaunch, grant again. A binary started from a shell inherits the terminal's grants; only `open` tests the app's own.
 - The agent sandbox cannot read `log show` or take screenshots. Use the log file and `--overlay-demo`.
 
 ## Code

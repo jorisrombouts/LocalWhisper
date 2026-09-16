@@ -49,7 +49,7 @@ func loadSamples16k(_ url: URL) throws -> [Float] {
 if args.contains("--insert-test") {
     Task { @MainActor in
         try? await Task.sleep(for: .seconds(3))
-        TextInserter.insert("hello from LocalWhisper")
+        print("insert:", TextInserter.insert("hello from LocalWhisper") ?? "posted")
         try? await Task.sleep(for: .seconds(1))
         exit(0)
     }

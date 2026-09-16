@@ -30,7 +30,7 @@ Two ways, same result:
 - **Hold** Left Option, speak, release.
 - **Tap** Left Option, speak, tap again. Esc or the ✕ in the pill discards. It stops by itself after two minutes without speech.
 
-Any other key while holding cancels, so Option shortcuts like `€` or `@` still work. A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted. The language is detected automatically; Dutch, English and Swedish are verified.
+Any other key while holding cancels, so Option shortcuts like `€` or `@` still work. A pill at the bottom of the screen shows listening, transcribing, cleaning up, and inserted, or the reason a paste did not land. The language is detected automatically; Dutch, English and Swedish are verified.
 
 The menu has a microphone picker ("Automatic" is the built-in microphone; Bluetooth headsets work when picked but miss the first half second), a cleanup toggle, Launch at Login, Recent transcriptions (the last five; clicking one copies it), and Quit.
 
@@ -59,7 +59,7 @@ Recognition is flat up to 30 s of audio. Turning cleanup off in the menu leaves 
 | Silero VAD model | 868 KB |
 | App binary | 444 KB |
 
-The Swift source is about 770 lines in 10 files.
+The Swift source is about 785 lines in 10 files.
 
 ## Privacy
 
@@ -67,7 +67,7 @@ No network calls. The models and Apple Intelligence run on-device. Your clipboar
 
 ## Troubleshooting
 
-- The pill says "Inserted" but nothing was pasted: Accessibility is missing or stale. Run `tccutil reset Accessibility nl.joris.localwhisper`, relaunch the app, grant it again.
+- The pill says "Accessibility permission missing": grant it in System Settings. If it is already enabled there, the entry is stale: run `tccutil reset Accessibility nl.joris.localwhisper`, relaunch the app, grant it again. The transcript is still in Recent transcriptions.
 - Timings per dictation and engine output are in `~/Library/Logs/LocalWhisper.log`.
 - If you rebuild often, run `./make-signing-cert.sh` once so permissions survive rebuilds.
 
@@ -78,4 +78,3 @@ A Swift Package with no Xcode project. `./build-app.sh` builds and runs `build/L
 ## Roadmap
 
 - Core ML encoder: recognition about twice as fast, for 1.3 GB more disk space.
-- The pill reports a failed paste instead of "Inserted".

@@ -138,12 +138,13 @@ final class DictationController {
             }
 
             let t2 = Date()
-            TextInserter.insert(text)
+            let notInserted = TextInserter.insert(text)
             transcripts = Array(([text] + transcripts).prefix(5))
             NSLog("dictation mode=%@ audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
                   mode, audioSeconds, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
-            state = fellBack ? .fallback("Raw text inserted") : .done
-            try? await Task.sleep(for: .milliseconds(fellBack ? 1500 : 700))
+            // A failed paste is the one the user must act on, so it outranks a cleanup fallback.
+            state = notInserted.map(State.fallback) ?? (fellBack ? .fallback("Raw text inserted") : .done)
+            try? await Task.sleep(for: .milliseconds(notInserted != nil ? 2500 : fellBack ? 1500 : 700))
             finish()
         }
     }
@@ -164,7 +165,8 @@ final class DictationController {
     /// `--overlay-demo <dir>`: render every overlay state to <dir>/overlay-<state>.png and exit.
     func demoOverlay(to dir: String) {
         let states: [(String, State)] = [("listening", .listening), ("transcribing", .transcribing), ("cleaning", .cleaning),
-                                         ("done", .done), ("fallback", .fallback("Raw text inserted"))]
+                                         ("done", .done), ("fallback", .fallback("Raw text inserted")),
+                                         ("paste-failed", .fallback("Accessibility permission missing"))]
         level = 0.7
         for (name, s) in states + [("listening-handsfree", .listening)] {
             state = s
