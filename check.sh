@@ -32,7 +32,9 @@ Q=$("$BIN" --clean "who wrote hamlet" 2>/dev/null | grep "^text:")
 echo "$Q" | grep -q "?" && ! echo "$Q" | grep -qi "shakespeare" || { echo "FAIL: cleanup answered a question instead of editing it: $Q"; exit 1; }
 
 "$BIN" --overlay-demo "$T" >/dev/null 2>&1 || true
-[ "$(ls "$T"/overlay-*.png | wc -l)" -eq 7 ] || { echo "FAIL: overlay render"; exit 1; }
+for state in listening listening-handsfree transcribing cleaning done fallback paste-failed; do
+  [ -f "$T/overlay-$state.png" ] || { echo "FAIL: overlay render: $state"; exit 1; }
+done
 
 rm -rf "$T"
 echo "all checks passed"

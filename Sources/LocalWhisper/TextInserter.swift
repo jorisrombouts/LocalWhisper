@@ -5,7 +5,6 @@ import Carbon.HIToolbox
 @MainActor
 enum TextInserter {
     /// nil when ⌘V was posted, else why it could not be. Whether the app accepted the paste is not observable.
-    @discardableResult
     static func insert(_ text: String) -> String? {
         let pb = NSPasteboard.general
         let saved = pb.string(forType: .string)

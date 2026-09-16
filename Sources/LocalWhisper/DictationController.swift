@@ -142,9 +142,13 @@ final class DictationController {
             transcripts = Array(([text] + transcripts).prefix(5))
             NSLog("dictation mode=%@ audio_s=%.1f whisper_ms=%d clean_ms=%d insert_ms=%d fallback=%d",
                   mode, audioSeconds, whisperMs, cleanMs, ms(since: t2), fellBack ? 1 : 0)
-            // A failed paste is the one the user must act on, so it outranks a cleanup fallback.
-            state = notInserted.map(State.fallback) ?? (fellBack ? .fallback("Raw text inserted") : .done)
-            try? await Task.sleep(for: .milliseconds(notInserted != nil ? 2500 : fellBack ? 1500 : 700))
+            // A failed paste is the one the user must act on, so it outranks a cleanup fallback and holds longer.
+            let (next, hold): (State, Int) =
+                if let notInserted { (.fallback(notInserted), 2500) }
+                else if fellBack { (.fallback("Raw text inserted"), 1500) }
+                else { (.done, 700) }
+            state = next
+            try? await Task.sleep(for: .milliseconds(hold))
             finish()
         }
     }
