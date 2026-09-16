@@ -21,8 +21,12 @@ python3 -c "import wave,random,struct,math; random.seed(1); w=wave.open('$T/hum.
 [ "$("$BIN" --transcribe "$T/hum.wav" 2>/dev/null | grep "^text:")" = "text: " ] || { echo "FAIL: VAD should hear no speech in a short hum"; exit 1; }
 "$BIN" --transcribe "$T/ty.wav" 2>/dev/null | grep -i "thank you" || { echo "FAIL: a spoken 'thank you' must survive; only non-speech is dropped"; exit 1; }
 
-OUT=$("$BIN" --clean "ik wil eh morgen naar de de winkel gaan" 2>/dev/null | grep "^text:")
-echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qiE " eh | de de |edited:|transcript:" || { echo "FAIL: cleanup: $OUT"; exit 1; }
+# Whisper hands over punctuated, capitalised text. Lowercase input hides the case that actually breaks.
+OUT=$("$BIN" --clean "Ik wil, eh, morgen naar de winkel gaan." 2>/dev/null | grep "^text:")
+echo "$OUT" | grep -q "winkel" && ! echo "$OUT" | grep -qiE ", eh,|edited:|transcript:" || { echo "FAIL: cleanup: $OUT"; exit 1; }
+
+P=$("$BIN" --clean "I still face the issue that I asked the question and then, uh, then suddenly it answered instead of just transcribed. What, why do you think that happened?" 2>/dev/null | grep "^text:")
+! echo "$P" | grep -qiE "[ ,]uh[ ,]" || { echo "FAIL: filler survived punctuated input: $P"; exit 1; }
 
 Q=$("$BIN" --clean "who wrote hamlet" 2>/dev/null | grep "^text:")
 echo "$Q" | grep -q "?" && ! echo "$Q" | grep -qi "shakespeare" || { echo "FAIL: cleanup answered a question instead of editing it: $Q"; exit 1; }

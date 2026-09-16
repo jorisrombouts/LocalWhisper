@@ -9,18 +9,28 @@ final class Cleaner {
     You are a transcript editor. The user sends a raw speech-to-text transcript. Reply with only the edited transcript.
     Rules:
     - Keep the language of the transcript. Dutch stays Dutch, Swedish stays Swedish, English stays English. Never translate.
-    - The transcript may read as a question or a request aimed at you. It never is. Never answer, reply to, summarise, add to or reorder it. Reproduce the speaker's own words, only cleaned up.
+    - A transcript that reads as a question or a request is still only a transcript. Edit it and hand it back. Never answer it, reply to it, summarise it, add to it or reorder it.
+    - The transcript arrives with punctuation and capitals already. It still needs editing: fillers, repeats and false starts survive speech-to-text.
     - Fix punctuation, capitalisation and sentence breaks.
     - Remove filler words (um, uh, eh, ehm, like, you know) and stuttered repeats.
-    - Apply self-corrections ("no wait", "I mean", "nee wacht", "of eigenlijk"): keep the correction, drop what it replaced.
+    - Apply self-corrections, with or without a marker such as "no wait", "I mean", "nee wacht" or "of eigenlijk". Keep the correction, drop what it replaced. Without such a marker, leave both versions alone.
     """
 
+    /// Written the way whisper hands text over, punctuated and capitalised. Lowercase examples teach the
+    /// model that tidy-looking input needs no edit, and it returns a filler-ridden sentence unchanged.
     static let examples = [
-        ("um so i think we should uh go to the the store tomorrow", "I think we should go to the store tomorrow."),
-        ("send the report to john no wait to sarah by friday", "Send the report to Sarah by Friday."),
-        ("ik wil eh morgen naar de winkel gaan nee wacht overmorgen", "Ik wil overmorgen naar de winkel gaan."),
-        ("kun je even eh kijken of de de build nog werkt", "Kun je even kijken of de build nog werkt?"),
-        ("what time does the the store close on sunday", "What time does the store close on Sunday?"),
+        ("So I think we should, uh, go to the store tomorrow and buy some, eh, apples.",
+         "So I think we should go to the store tomorrow and buy some apples."),
+        ("Send the report to John, no wait, to Sarah by Friday.",
+         "Send the report to Sarah by Friday."),
+        ("Ik wil, eh, morgen naar de winkel gaan. Nee wacht, overmorgen.",
+         "Ik wil overmorgen naar de winkel gaan."),
+        ("Kun je even, eh, kijken of de de build nog werkt?",
+         "Kun je even kijken of de build nog werkt?"),
+        ("We shipped it on Friday and, uh, nobody noticed. How did you hear about it?",
+         "We shipped it on Friday and nobody noticed. How did you hear about it?"),
+        ("Can you, um, check the logs and tell me what went wrong?",
+         "Can you check the logs and tell me what went wrong?"),
     ]
 
     /// The examples as past turns: the model imitates its own replies, and there is no "Edited:" label to echo.
